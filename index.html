@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Database - Interactive Learning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #e4e4e4;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 3em;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: #00d4ff;
+            margin: 30px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #00d4ff;
+        }
+
+        h3 {
+            color: #7b2cbf;
+            margin: 20px 0 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #888;
+        }
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+        }
+
+        nav button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #7b2cbf, #00d4ff);
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        nav button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,212,255,0.3);
+        }
+
+        nav button.active {
+            background: linear-gradient(135deg, #ff6b6b, #7b2cbf);
+            box-shadow: 0 5px 20px rgba(255,107,107,0.4);
+        }
+
+        .section {
+            display: none;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Pipeline Visualization */
+        .pipeline {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .pipeline-step {
+            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+            border: 2px solid #00d4ff;
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 150px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .pipeline-step:hover {
+            transform: scale(1.05);
+            border-color: #7b2cbf;
+            box-shadow: 0 0 30px rgba(123,44,191,0.5);
+        }
+
+        .pipeline-step .icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .pipeline-step .title {
+            font-weight: bold;
+            color: #00d4ff;
+            margin-bottom: 5px;
+        }
+
+        .arrow {
+            font-size: 2em;
+            color: #7b2cbf;
+        }
+
+        /* Interactive Chunking */
+        .chunking-demo {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .source-text {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #7b2cbf;
+        }
+
+        .chunk-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .chunk-controls label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chunk-controls input[type="range"] {
+            width: 200px;
+        }
+
+        .chunk-controls input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #00d4ff;
+            background: #16213e;
+            color: #e4e4e4;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        button.primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,212,255,0.4);
+        }
+
+        .chunks-display {
+            display: grid;
+            gap: 10px;
+        }
+
+        .chunk {
+            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #00d4ff;
+            position: relative;
+        }
+
+        .chunk-number {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: #7b2cbf;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+
+        .chunk-size {
+            color: #888;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+
+        /* Embedding Visualization */
+        .embedding-demo {
+            margin: 30px 0;
+        }
+
+        #embeddingCanvas {
+            background: #1a1a2e;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 800px;
+            height: 500px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .embedding-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .embedding-stat {
+            background: #16213e;
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .embedding-stat .value {
+            font-size: 2em;
+            color: #00d4ff;
+            font-weight: bold;
+        }
+
+        .embedding-stat .label {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        /* Retrieval Demo */
+        .retrieval-demo {
+            margin: 30px 0;
+        }
+
+        .query-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .query-input input {
+            flex: 1;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #7b2cbf;
+            background: #16213e;
+            color: #e4e4e4;
+            font-size: 1em;
+        }
+
+        .query-input input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        .results-container {
+            display: grid;
+            gap: 15px;
+        }
+
+        .result-item {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .result-item.high-relevance {
+            border-left-color: #00ff88;
+        }
+
+        .result-item.medium-relevance {
+            border-left-color: #ffaa00;
+        }
+
+        .result-item.low-relevance {
+            border-left-color: #ff4444;
+        }
+
+        .relevance-score {
+            background: #16213e;
+            padding: 10px;
+            border-radius: 50%;
+            min-width: 60px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .result-content {
+            flex: 1;
+        }
+
+        /* Quiz Section */
+        .quiz-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .question {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #00d4ff;
+        }
+
+        .options {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option {
+            background: #1a1a2e;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            border-color: #7b2cbf;
+            background: #2a2a4a;
+        }
+
+        .option.selected {
+            border-color: #00d4ff;
+            background: rgba(0,212,255,0.1);
+        }
+
+        .option.correct {
+            border-color: #00ff88;
+            background: rgba(0,255,136,0.2);
+        }
+
+        .option.incorrect {
+            border-color: #ff4444;
+            background: rgba(255,68,68,0.2);
+        }
+
+        .explanation {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(123,44,191,0.2);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+        }
+
+        .quiz-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 10px;
+            background: #1a1a2e;
+            border-radius: 5px;
+            margin: 0 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7b2cbf, #00d4ff);
+            transition: width 0.3s;
+        }
+
+        .quiz-score {
+            text-align: center;
+            font-size: 1.5em;
+            padding: 30px;
+            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .score-value {
+            font-size: 3em;
+            color: #00d4ff;
+            font-weight: bold;
+        }
+
+        /* Matching Game */
+        .matching-game {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        @media (max-width: 600px) {
+            .matching-game {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .matching-column {
+            display: grid;
+            gap: 10px;
+        }
+
+        .matching-item {
+            padding: 15px 20px;
+            background: #1a1a2e;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .matching-item:hover {
+            border-color: #7b2cbf;
+        }
+
+        .matching-item.selected {
+            border-color: #00d4ff;
+            background: rgba(0,212,255,0.1);
+        }
+
+        .matching-item.matched {
+            border-color: #00ff88;
+            background: rgba(0,255,136,0.1);
+            cursor: default;
+        }
+
+        .game-controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            color: #00d4ff;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        /* Images/Diagrams */
+        .diagram {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .diagram svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .pipeline {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted #00d4ff;
+            cursor: help;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 250px;
+            background-color: #16213e;
+            color: #e4e4e4;
+            text-align: center;
+            border-radius: 10px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9em;
+            border: 1px solid #7b2cbf;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Flow Animation */
+        .flow-container {
+            position: relative;
+            padding: 40px 0;
+        }
+
+        .flow-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #7b2cbf, #00d4ff);
+            z-index: 0;
+        }
+
+        /* Code blocks */
+        pre {
+            background: #0a0a15;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            border-left: 4px solid #7b2cbf;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            color: #00d4ff;
+        }
+
+        /* Info boxes */
+        .info-box {
+            background: rgba(0,212,255,0.1);
+            border-left: 4px solid #00d4ff;
+            padding: 15px 20px;
+            border-radius: 0 10px 10px 0;
+            margin: 15px 0;
+        }
+
+        .info-box.warning {
+            background: rgba(255,170,0,0.1);
+            border-left-color: #ffaa00;
+        }
+
+        .info-box.success {
+            background: rgba(0,255,136,0.1);
+            border-left-color: #00ff88;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 RAG Database</h1>
+            <p class="subtitle">Interactive Learning: Retrieval Augmented Generation</p>
+        </header>
+
+        <nav>
+            <button class="active" onclick="showSection('overview')">📚 Overview</button>
+            <button onclick="showSection('pipeline')">🔄 Pipeline</button>
+            <button onclick="showSection('chunking')">✂️ Chunking</button>
+            <button onclick="showSection('embedding')">🎯 Embedding</button>
+            <button onclick="showSection('storage')">💾 Storage</button>
+            <button onclick="showSection('retrieval')">🔍 Retrieval</button>
+            <button onclick="showSection('quiz')">📝 Quiz</button>
+            <button onclick="showSection('game')">🎮 Game</button>
+        </nav>
+
+        <!-- Overview Section -->
+        <div id="overview" class="section active">
+            <h2>What is RAG?</h2>
+            
+            <div class="info-box">
+                <strong>RAG (Retrieval Augmented Generation)</strong> is a technique that combines the power of large language models with external knowledge bases to provide more accurate and contextual responses.
+            </div>
+
+            <div class="diagram">
+                <svg viewBox="0 0 800 400" width="100%">
+                    <!-- Background -->
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#7b2cbf;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#00d4ff;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    
+                    <!-- Documents -->
+                    <rect x="20" y="50" width="120" height="80" rx="10" fill="#16213e" stroke="#00d4ff" stroke-width="2"/>
+                    <text x="80" y="95" text-anchor="middle" fill="#e4e4e4" font-size="14">📄 Documents</text>
+                    
+                    <!-- Arrow -->
+                    <path d="M145 90 L185 90" stroke="url(#grad1)" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+                    
+                    <!-- Chunker -->
+                    <rect x="190" y="50" width="120" height="80" rx="10" fill="#16213e" stroke="#7b2cbf" stroke-width="2"/>
+                    <text x="250" y="85" text-anchor="middle" fill="#e4e4e4" font-size="14">✂️ Chunking</text>
+                    <text x="250" y="105" text-anchor="middle" fill="#888" font-size="10">Split into pieces</text>
+                    
+                    <!-- Arrow -->
+                    <path d="M315 90 L355 90" stroke="url(#grad1)" stroke-width="3" fill="none"/>
+                    
+                    <!-- Embedding Model -->
+                    <rect x="360" y="50" width="120" height="80" rx="10" fill="#16213e" stroke="#00d4ff" stroke-width="2"/>
+                    <text x="420" y="85" text-anchor="middle" fill="#e4e4e4" font-size="14">🎯 Embedding</text>
+                    <text x="420" y="105" text-anchor="middle" fill="#888" font-size="10">Vector conversion</text>
+                    
+                    <!-- Arrow -->
+                    <path d="M485 90 L525 90" stroke="url(#grad1)" stroke-width="3" fill="none"/>
+                    
+                    <!-- Vector DB -->
+                    <rect x="530" y="50" width="120" height="80" rx="10" fill="#16213e" stroke="#ff6b6b" stroke-width="2"/>
+                    <text x="590" y="85" text-anchor="middle" fill="#e4e4e4" font-size="14">💾 Vector DB</text>
+                    <text x="590" y="105" text-anchor="middle" fill="#888" font-size="10">Storage</text>
+                    
+                    <!-- Query Flow -->
+                    <rect x="20" y="200" width="120" height="60" rx="10" fill="#16213e" stroke="#00ff88" stroke-width="2"/>
+                    <text x="80" y="235" text-anchor="middle" fill="#e4e4e4" font-size="14">❓ Query</text>
+                    
+                    <path d="M80 200 L80 130" stroke="#00ff88" stroke-width="2" stroke-dasharray="5,5"/>
+                    
+                    <!-- Query Embedding -->
+                    <rect x="190" y="200" width="120" height="60" rx="10" fill="#16213e" stroke="#00ff88" stroke-width="2"/>
+                    <text x="250" y="235" text-anchor="middle" fill="#e4e4e4" font-size="14">🎯 Embed</text>
+                    
+                    <path d="M145 230 L185 230" stroke="url(#grad1)" stroke-width="3" fill="none"/>
+                    
+                    <!-- Similarity Search -->
+                    <rect x="360" y="200" width="120" height="60" rx="10" fill="#16213e" stroke="#00ff88" stroke-width="2"/>
+                    <text x="420" y="225" text-anchor="middle" fill="#e4e4e4" font-size="14">🔍 Search</text>
+                    <text x="420" y="245" text-anchor="middle" fill="#888" font-size="10">Find similar</text>
+                    
+                    <path d="M315 230 L355 230" stroke="url(#grad1)" stroke-width="3" fill="none"/>
+                    <path d="M485 230 L525 230" stroke="url(#grad1)" stroke-width="3" fill="none"/>
+                    
+                    <!-- Retrieved Chunks -->
+                    <rect x="530" y="200" width="120" height="60" rx="10" fill="#16213e" stroke="#ff6b6b" stroke-width="2"/>
+                    <text x="590" y="225" text-anchor="middle" fill="#e4e4e4" font-size="14">📋 Results</text>
+                    <text x="590" y="245" text-anchor="middle" fill="#888" font-size="10">Top-k chunks</text>
+                    
+                    <!-- To LLM -->
+                    <rect x="360" y="320" width="120" height="60" rx="10" fill="#16213e" stroke="#ff6b6b" stroke-width="2"/>
+                    <text x="420" y="355" text-anchor="middle" fill="#e4e4e4" font-size="14">🤖 LLM</text>
+                    
+                    <path d="M420 320 L420 265" stroke="url(#grad1)" stroke-width="3" fill="none"/>
+                    
+                    <!-- Answer -->
+                    <rect x="530" y="320" width="120" height="60" rx="10" fill="#16213e" stroke="#00ff88" stroke-width="2"/>
+                    <text x="590" y="355" text-anchor="middle" fill="#e4e4e4" font-size="14">✅ Answer</text>
+                    
+                    <path d="M485 350 L525 350" stroke="url(#grad1)" stroke-width="3" fill="none"/>
+                </svg>
+            </div>
+
+            <h3>Key Components</h3>
+            <ul>
+                <li><strong>📄 Documents:</strong> Your knowledge base (PDFs, MD files, text documents)</li>
+                <li><strong>✂️ Chunking:</strong> Splitting documents into smaller, manageable pieces</li>
+                <li><strong>🎯 Embedding:</strong> Converting text into numerical vectors (arrays of numbers)</li>
+                <li><strong>💾 Vector Database:</strong> Specialized storage for vector similarity search</li>
+                <li><strong>🔍 Retrieval:</strong> Finding the most relevant chunks for a query</li>
+                <li><strong>🤖 Generation:</strong> LLM uses retrieved context to generate accurate answers</li>
+            </ul>
+
+            <h3>Why RAG?</h3>
+            <div class="info-box success">
+                <ul>
+                    <li><strong>Up-to-date:</strong> Add new documents without retraining the model</li>
+                    <li><strong>Accurate:</strong> Reduces hallucinations by grounding responses in actual data</li>
+                    <li><strong>Private:</strong> Keep sensitive data local while using powerful LLMs</li>
+                    <li><strong>Efficient:</strong> Cheaper than fine-tuning for domain-specific knowledge</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Pipeline Section -->
+        <div id="pipeline" class="section">
+            <h2>RAG Pipeline Visualization</h2>
+            
+            <p>Click on each step to learn more about the process:</p>
+            
+            <div class="pipeline">
+                <div class="pipeline-step" onclick="showStepDetail('documents')">
+                    <div class="icon">📄</div>
+                    <div class="title">Documents</div>
+                    <div class="desc">Source knowledge</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="pipeline-step" onclick="showStepDetail('chunking')">
+                    <div class="icon">✂️</div>
+                    <div class="title">Chunking</div>
+                    <div class="desc">Split into pieces</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="pipeline-step" onclick="showStepDetail('embedding')">
+                    <div class="icon">🎯</div>
+                    <div class="title">Embedding</div>
+                    <div class="desc">Vector conversion</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="pipeline-step" onclick="showStepDetail('storage')">
+                    <div class="icon">💾</div>
+                    <div class="title">Storage</div>
+                    <div class="desc">Vector database</div>
+                </div>
+            </div>
+
+            <div id="stepDetail" class="info-box" style="display:none;">
+                <h3 id="stepTitle"></h3>
+                <p id="stepContent"></p>
+            </div>
+
+            <h3>Query Flow</h3>
+            <div class="pipeline">
+                <div class="pipeline-step">
+                    <div class="icon">❓</div>
+                    <div class="title">Query</div>
+                    <div class="desc">User question</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="pipeline-step">
+                    <div class="icon">🎯</div>
+                    <div class="title">Embed Query</div>
+                    <div class="desc">Same embedding model</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="pipeline-step">
+                    <div class="icon">🔍</div>
+                    <div class="title">Similarity Search</div>
+                    <div class="desc">Find closest vectors</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="pipeline-step">
+                    <div class="icon">🤖</div>
+                    <div class="title">Generate</div>
+                    <div class="desc">LLM + context</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chunking Section -->
+        <div id="chunking" class="section">
+            <h2>Interactive Chunking Demo</h2>
+            
+            <div class="info-box">
+                <strong>Chunking</strong> is the process of splitting large documents into smaller pieces (chunks) that can be processed and stored efficiently.
+            </div>
+
+            <div class="chunking-demo">
+                <h3>📄 Source Text</h3>
+                <div class="source-text" id="sourceText">
+                    RAG (Retrieval Augmented Generation) is a technique that combines large language models with external knowledge bases. The process involves several steps. First, documents are split into smaller chunks. Each chunk is then converted into a vector using an embedding model. These vectors are stored in a specialized database called a vector database. When a user asks a question, the query is also converted to a vector. The system then searches for the most similar vectors in the database. The retrieved chunks provide context for the language model to generate accurate responses.
+                </div>
+
+                <h3>⚙️ Chunking Parameters</h3>
+                <div class="chunk-controls">
+                    <label>
+                        Chunk Size:
+                        <input type="range" id="chunkSize" min="50" max="500" value="200" oninput="updateChunking()">
+                        <span id="chunkSizeValue">200</span> chars
+                    </label>
+                    <label>
+                        Overlap:
+                        <input type="range" id="overlap" min="0" max="100" value="50" oninput="updateChunking()">
+                        <span id="overlapValue">50</span> chars
+                    </label>
+                </div>
+
+                <button class="primary" onclick="updateChunking()">🔄 Apply Chunking</button>
+
+                <h3>📊 Resulting Chunks</h3>
+                <div class="chunks-display" id="chunksDisplay">
+                    <!-- Chunks will be displayed here -->
+                </div>
+            </div>
+
+            <h3>Chunking Strategies</h3>
+            <ul>
+                <li><strong>Fixed-size:</strong> Split by character count with optional overlap</li>
+                <li><strong>Sentence-based:</strong> Split at sentence boundaries</li>
+                <li><strong>Paragraph-based:</strong> Keep paragraphs together</li>
+                <li><strong>Semantic:</strong> Use embeddings to find natural breaks</li>
+                <li><strong>Recursive:</strong> Split by multiple separators hierarchically</li>
+            </ul>
+
+            <div class="info-box warning">
+                <strong>⚠️ Important:</strong> Smaller chunks = more precise retrieval but may lose context. Larger chunks = more context but may include irrelevant information.
+            </div>
+        </div>
+
+        <!-- Embedding Section -->
+        <div id="embedding" class="section">
+            <h2>Embedding Visualization</h2>
+            
+            <div class="info-box">
+                <strong>Embeddings</strong> convert text into arrays of numbers (vectors) that capture semantic meaning. Similar concepts have similar vectors.
+            </div>
+
+            <div class="embedding-demo">
+                <canvas id="embeddingCanvas"></canvas>
+                
+                <div class="embedding-info">
+                    <div class="embedding-stat">
+                        <div class="value" id="vectorDim">768</div>
+                        <div class="label">Vector Dimensions</div>
+                    </div>
+                    <div class="embedding-stat">
+                        <div class="value" id="similarity">0.00</div>
+                        <div class="label">Cosine Similarity</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chunk-controls" style="justify-content: center;">
+                <input type="text" id="embeddingInput1" placeholder="Enter text 1 (e.g., 'cat')" 
+                       style="padding: 10px; border-radius: 5px; border: 2px solid #7b2cbf; background: #16213e; color: #e4e4e4; width: 200px;">
+                <input type="text" id="embeddingInput2" placeholder="Enter text 2 (e.g., 'dog')" 
+                       style="padding: 10px; border-radius: 5px; border: 2px solid #7b2cbf; background: #16213e; color: #e4e4e4; width: 200px;">
+                <button class="primary" onclick="visualizeEmbedding()">🎯 Visualize</button>
+            </div>
+
+            <h3>How Embeddings Work</h3>
+            <p>Each word/text is converted into a vector with hundreds of dimensions. The model learns these representations by analyzing billions of texts.</p>
+            
+            <pre><code>// Example embedding (simplified to 5 dimensions)
+"cat" → [0.2, -0.5, 0.8, 0.1, -0.3]
+"dog" → [0.3, -0.4, 0.7, 0.2, -0.2]
+"car" → [-0.5, 0.8, -0.2, 0.9, 0.4]
+
+// Similar words have similar vectors!
+// cat ↔ dog: high similarity (both are animals)
+// cat ↔ car: low similarity (unrelated concepts)</code></pre>
+
+            <h3>Popular Embedding Models</h3>
+            <ul>
+                <li><strong>nomic-embed-text:</strong> 768 dimensions, open source, great for RAG</li>
+                <li><strong>text-embedding-ada-002:</strong> OpenAI's model, 1536 dimensions</li>
+                <li><strong>BERT:</strong> 768 dimensions, classic transformer model</li>
+                <li><strong>Sentence-BERT:</strong> Optimized for sentence similarity</li>
+            </ul>
+        </div>
+
+        <!-- Storage Section -->
+        <div id="storage" class="section">
+            <h2>Vector Storage & Databases</h2>
+            
+            <div class="info-box">
+                <strong>Vector databases</strong> are specialized databases designed to store and efficiently search through high-dimensional vectors.
+            </div>
+
+            <h3>Popular Vector Databases</h3>
+            <div class="pipeline" style="flex-wrap: wrap;">
+                <div class="pipeline-step" style="cursor: default;">
+                    <div class="icon">🐘</div>
+                    <div class="title">pgvector</div>
+                    <div class="desc">PostgreSQL extension</div>
+                </div>
+                <div class="pipeline-step" style="cursor: default;">
+                    <div class="icon">🔷</div>
+                    <div class="title">LanceDB</div>
+                    <div class="desc">Embedded, fast</div>
+                </div>
+                <div class="pipeline-step" style="cursor: default;">
+                    <div class="icon">🟡</div>
+                    <div class="title">Pinecone</div>
+                    <div class="desc">Managed cloud service</div>
+                </div>
+                <div class="pipeline-step" style="cursor: default;">
+                    <div class="icon">🔴</div>
+                    <div class="title">Weaviate</div>
+                    <div class="desc">GraphQL + semantic</div>
+                </div>
+                <div class="pipeline-step" style="cursor: default;">
+                    <div class="icon">🟣</div>
+                    <div class="title">Milvus</div>
+                    <div class="desc">Scalable, open source</div>
+                </div>
+                <div class="pipeline-step" style="cursor: default;">
+                    <div class="icon">💚</div>
+                    <div class="title">Chroma</div>
+                    <div class="desc">Simple, Python-native</div>
+                </div>
+            </div>
+
+            <h3>How Storage Works</h3>
+            
+            <div class="diagram">
+                <svg viewBox="0 0 600 300" width="100%">
+                    <!-- Table representation -->
+                    <rect x="20" y="20" width="560" height="260" rx="10" fill="#16213e" stroke="#00d4ff" stroke-width="2"/>
+                    
+                    <!-- Header -->
+                    <rect x="20" y="20" width="560" height="40" rx="10" fill="#7b2cbf"/>
+                    <text x="60" y="45" fill="#e4e4e4" font-size="12" font-weight="bold">ID</text>
+                    <text x="150" y="45" fill="#e4e4e4" font-size="12" font-weight="bold">Text</text>
+                    <text x="350" y="45" fill="#e4e4e4" font-size="12" font-weight="bold">Embedding</text>
+                    <text x="510" y="45" fill="#e4e4e4" font-size="12" font-weight="bold">Metadata</text>
+                    
+                    <!-- Row 1 -->
+                    <line x1="20" y1="60" x2="580" y2="60" stroke="#00d4ff" stroke-width="1"/>
+                    <text x="60" y="90" fill="#e4e4e4" font-size="11">1</text>
+                    <text x="150" y="90" fill="#e4e4e4" font-size="11">"RAG combines..."</text>
+                    <text x="350" y="90" fill="#00d4ff" font-size="11">[0.2, -0.5, ...]</text>
+                    <text x="510" y="90" fill="#888" font-size="11">{source}</text>
+                    
+                    <!-- Row 2 -->
+                    <line x1="20" y1="110" x2="580" y2="110" stroke="#00d4ff" stroke-width="1" opacity="0.3"/>
+                    <text x="60" y="140" fill="#e4e4e4" font-size="11">2</text>
+                    <text x="150" y="140" fill="#e4e4e4" font-size="11">"Documents are..."</text>
+                    <text x="350" y="140" fill="#00d4ff" font-size="11">[0.4, 0.1, ...]</text>
+                    <text x="510" y="140" fill="#888" font-size="11">{source}</text>
+                    
+                    <!-- Row 3 -->
+                    <line x1="20" y1="160" x2="580" y2="160" stroke="#00d4ff" stroke-width="1" opacity="0.3"/>
+                    <text x="60" y="190" fill="#e4e4e4" font-size="11">3</text>
+                    <text x="150" y="190" fill="#e4e4e4" font-size="11">"Embeddings are..."</text>
+                    <text x="350" y="190" fill="#00d4ff" font-size="11">[0.7, -0.2, ...]</text>
+                    <text x="510" y="190" fill="#888" font-size="11">{source}</text>
+                    
+                    <!-- Index visualization -->
+                    <rect x="40" y="220" width="520" height="50" rx="5" fill="#1a1a2e" stroke="#7b2cbf" stroke-width="1"/>
+                    <text x="60" y="245" fill="#7b2cbf" font-size="11">📊 HNSW Index (Hierarchical Navigable Small World)</text>
+                    <text x="60" y="260" fill="#888" font-size="10">Approximate nearest neighbor search - O(log n) complexity</text>
+                </svg>
+            </div>
+
+            <h3>Key Concepts</h3>
+            <ul>
+                <li><strong>Vector Index:</strong> Data structure for fast similarity search (HNSW, IVF, LSH)</li>
+                <li><strong>Distance Metrics:</strong> Cosine similarity, Euclidean distance, dot product</li>
+                <li><strong>Metadata Filtering:</strong> Filter by source, date, author before vector search</li>
+                <li><strong>Hybrid Search:</strong> Combine keyword search with vector similarity</li>
+            </ul>
+
+            <h3>LanceDB Example (OpenClaw)</h3>
+            <pre><code>// OpenClaw uses LanceDB for vector storage
+// Path: ~/.openclaw/memory/lancedb
+// Table: memories_indexed
+// Embedding: nomic-embed-text (768 dims)
+
+// Store vectors
+await table.add([
+  { text: "chunk content", embedding: [0.1, 0.2, ...] }
+]);
+
+// Search similar
+const results = await table
+  .vectorSearch(queryEmbedding)
+  .limit(5)
+  .toArray();</code></pre>
+        </div>
+
+        <!-- Retrieval Section -->
+        <div id="retrieval" class="section">
+            <h2>Retrieval Demo</h2>
+            
+            <div class="info-box">
+                <strong>Retrieval</strong> is finding the most relevant chunks from the vector database for a given query.
+            </div>
+
+            <div class="retrieval-demo">
+                <h3>🔍 Search the Knowledge Base</h3>
+                <div class="query-input">
+                    <input type="text" id="queryInput" placeholder="Ask something about RAG..." 
+                           onkeypress="if(event.key==='Enter') performSearch()">
+                    <button class="primary" onclick="performSearch()">Search</button>
+                </div>
+
+                <div class="info-box">
+                    <strong>Try:</strong> "What is RAG?", "How does chunking work?", "What are embeddings?", "Why use vector database?"
+                </div>
+
+                <h3>📊 Search Results</h3>
+                <div class="results-container" id="resultsContainer">
+                    <p style="color: #888; text-align: center;">Enter a query to see results...</p>
+                </div>
+
+                <h3>🎯 Similarity Score Explained</h3>
+                <div class="pipeline">
+                    <div class="pipeline-step" style="cursor: default;">
+                        <div class="icon">🟢</div>
+                        <div class="title">High (0.8-1.0)</div>
+                        <div class="desc">Very relevant</div>
+                    </div>
+                    <div class="pipeline-step" style="cursor: default;">
+                        <div class="icon">🟡</div>
+                        <div class="title">Medium (0.5-0.8)</div>
+                        <div class="desc">Somewhat relevant</div>
+                    </div>
+                    <div class="pipeline-step" style="cursor: default;">
+                        <div class="icon">🔴</div>
+                        <div class="title">Low (0.0-0.5)</div>
+                        <div class="desc">Not relevant</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Retrieval Strategies</h3>
+            <ul>
+                <li><strong>Top-K:</strong> Return K most similar chunks</li>
+                <li><strong>Threshold:</strong> Only return chunks above similarity threshold</li>
+                <li><strong>MMR:</strong> Maximal Marginal Relevance - diversity in results</li>
+                <li><strong>Hybrid:</strong> Combine vector search with keyword search</li>
+                <li><strong>Re-ranking:</strong> Use another model to re-order results</li>
+            </ul>
+        </div>
+
+        <!-- Quiz Section -->
+        <div id="quiz" class="section">
+            <h2>Test Your Knowledge 📝</h2>
+            
+            <div class="quiz-container">
+                <div class="quiz-progress">
+                    <span id="questionNumber">Question 1/5</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 20%;"></div>
+                    </div>
+                    <span id="scoreDisplay">Score: 0</span>
+                </div>
+
+                <div id="quizContent">
+                    <!-- Questions will be loaded here -->
+                </div>
+
+                <button class="primary" id="nextBtn" onclick="nextQuestion()" style="display: none;">Next Question →</button>
+                <button class="primary" id="restartBtn" onclick="restartQuiz()" style="display: none;">🔄 Restart Quiz</button>
+
+                <div class="quiz-score" id="finalScore" style="display: none;">
+                    <div>Final Score</div>
+                    <div class="score-value" id="finalScoreValue">0/5</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Section -->
+        <div id="game" class="section">
+            <h2>RAG Matching Game 🎮</h2>
+            
+            <p>Match each RAG concept with its correct description!</p>
+
+            <div class="game-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="matchScore">0</div>
+                    <div class="stat-label">Matches</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="attempts">0</div>
+                    <div class="stat-label">Attempts</div>
+                </div>
+            </div>
+
+            <div class="matching-game" id="matchingGame">
+                <div class="matching-column" id="concepts">
+                    <!-- Concepts will be loaded here -->
+                </div>
+                <div class="matching-column" id="descriptions">
+                    <!-- Descriptions will be loaded here -->
+                </div>
+            </div>
+
+            <div class="game-controls">
+                <button class="primary" onclick="resetGame()">🔄 New Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Initialize visualizations
+            if (sectionId === 'embedding') initEmbeddingCanvas();
+            if (sectionId === 'game') initGame();
+            if (sectionId === 'quiz') initQuiz();
+            if (sectionId === 'chunking') updateChunking();
+        }
+
+        // Pipeline details
+        const stepDetails = {
+            documents: {
+                title: '📄 Documents',
+                content: 'Your knowledge base: PDFs, markdown files, text documents, web pages. This is the raw data that will be indexed and made searchable. In OpenClaw, this includes files like MEMORY.md and other knowledge files.'
+            },
+            chunking: {
+                title: '✂️ Chunking',
+                content: 'Splitting documents into smaller pieces (typically 200-1000 characters). Important: overlap (e.g., 50 chars) helps preserve context across chunk boundaries. Chunk size affects retrieval quality - smaller = more precise, larger = more context.'
+            },
+            embedding: {
+                title: '🎯 Embedding',
+                content: 'Converting text into vectors using models like nomic-embed-text (768 dimensions). Each text chunk becomes an array of ~768 floating-point numbers that represent its semantic meaning. Similar meanings → similar vectors.'
+            },
+            storage: {
+                title: '💾 Storage',
+                content: 'Vectors are stored in specialized databases (LanceDB, Pinecone, pgvector). These databases use indexing algorithms (HNSW, IVF) to enable fast similarity search across millions of vectors in milliseconds.'
+            }
+        };
+
+        function showStepDetail(step) {
+            const detail = stepDetails[step];
+            document.getElementById('stepTitle').textContent = detail.title;
+            document.getElementById('stepContent').textContent = detail.content;
+            document.getElementById('stepDetail').style.display = 'block';
+        }
+
+        // Chunking Demo
+        function updateChunking() {
+            const chunkSize = parseInt(document.getElementById('chunkSize').value);
+            const overlap = parseInt(document.getElementById('overlap').value);
+            
+            document.getElementById('chunkSizeValue').textContent = chunkSize;
+            document.getElementById('overlapValue').textContent = overlap;
+            
+            const text = document.getElementById('sourceText').textContent;
+            const chunks = [];
+            let start = 0;
+            
+            while (start < text.length) {
+                chunks.push(text.slice(start, start + chunkSize));
+                start += chunkSize - overlap;
+                if (start < overlap) start = overlap; // Prevent infinite loop
+            }
+            
+            const display = document.getElementById('chunksDisplay');
+            display.innerHTML = chunks.map((chunk, i) => `
+                <div class="chunk">
+                    <span class="chunk-number">Chunk ${i + 1}</span>
+                    <div>${chunk}</div>
+                    <div class="chunk-size">${chunk.length} characters</div>
+                </div>
+            `).join('');
+        }
+
+        // Embedding Visualization
+        let embeddingCanvas, embeddingCtx;
+
+        function initEmbeddingCanvas() {
+            embeddingCanvas = document.getElementById('embeddingCanvas');
+            embeddingCtx = embeddingCanvas.getContext('2d');
+            
+            // Set canvas size
+            embeddingCanvas.width = embeddingCanvas.offsetWidth;
+            embeddingCanvas.height = 500;
+            
+            visualizeEmbedding();
+        }
+
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return hash;
+        }
+
+        function textToPseudoVector(text, dims = 50) {
+            // Create a pseudo-vector for visualization
+            const vector = [];
+            for (let i = 0; i < dims; i++) {
+                const seed = simpleHash(text + i);
+                vector.push(Math.sin(seed) * Math.cos(seed * 0.1));
+            }
+            return vector;
+        }
+
+        function visualizeEmbedding() {
+            if (!embeddingCtx) return;
+            
+            const ctx = embeddingCtx;
+            const width = embeddingCanvas.width;
+            const height = embeddingCanvas.height;
+            
+            // Clear canvas
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Get input texts
+            const text1 = document.getElementById('embeddingInput1').value || 'cat';
+            const text2 = document.getElementById('embeddingInput2').value || 'dog';
+            
+            // Generate pseudo-vectors for visualization
+            const vec1 = textToPseudoVector(text1, 50);
+            const vec2 = textToPseudoVector(text2, 50);
+            
+            // Draw grid
+            ctx.strokeStyle = '#2a2a4a';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 10; i++) {
+                ctx.beginPath();
+                ctx.moveTo(width * 0.1, height * 0.1 + i * height * 0.08);
+                ctx.lineTo(width * 0.45, height * 0.1 + i * height * 0.08);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(width * 0.55, height * 0.1 + i * height * 0.08);
+                ctx.lineTo(width * 0.9, height * 0.1 + i * height * 0.08);
+                ctx.stroke();
+            }
+            
+            // Draw Vector 1
+            const barWidth = width * 0.006;
+            const startX1 = width * 0.1;
+            const startY1 = height * 0.1;
+            
+            vec1.forEach((val, i) => {
+                const barHeight = Math.abs(val) * height * 0.4;
+                ctx.fillStyle = val >= 0 ? '#00d4ff' : '#ff6b6b';
+                ctx.fillRect(startX1 + i * barWidth * 1.5, startY1 + height * 0.3 - barHeight / 2, barWidth, barHeight);
+            });
+            
+            // Draw Vector 2
+            const startX2 = width * 0.55;
+            
+            vec2.forEach((val, i) => {
+                const barHeight = Math.abs(val) * height * 0.4;
+                ctx.fillStyle = val >= 0 ? '#7b2cbf' : '#ffaa00';
+                ctx.fillRect(startX2 + i * barWidth * 1.5, startY1 + height * 0.3 - barHeight / 2, barWidth, barHeight);
+            });
+            
+            // Calculate similarity (simplified cosine similarity)
+            let dotProduct = 0;
+            let norm1 = 0;
+            let norm2 = 0;
+            
+            // Use more dimensions for accurate similarity
+            const fullVec1 = textToPseudoVector(text1, 768);
+            const fullVec2 = textToPseudoVector(text2, 768);
+            
+            fullVec1.forEach((v, i) => {
+                dotProduct += v * fullVec2[i];
+                norm1 += v * v;
+                norm2 += fullVec2[i] * fullVec2[i];
+            });
+            
+            const similarity = dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
+            
+            // Update UI
+            document.getElementById('similarity').textContent = similarity.toFixed(3);
+            
+            // Draw labels
+            ctx.fillStyle = '#e4e4e4';
+            ctx.font = '16px Segoe UI';
+            ctx.fillText(`"${text1}"`, width * 0.1, height * 0.05);
+            ctx.fillText(`"${text2}"`, width * 0.55, height * 0.05);
+            
+            // Draw similarity line
+            ctx.strokeStyle = '#00ff88';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(width * 0.5, height * 0.3);
+            ctx.lineTo(width * 0.5, height * 0.5);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Draw similarity value
+            const similarityColor = similarity > 0.5 ? '#00ff88' : similarity > 0.3 ? '#ffaa00' : '#ff4444';
+            ctx.fillStyle = similarityColor;
+            ctx.font = 'bold 24px Segoe UI';
+            ctx.fillText(`Similarity: ${(similarity * 100).toFixed(1)}%`, width * 0.35, height * 0.9);
+        }
+
+        // Retrieval Demo
+        const knowledgeBase = [
+            { text: "RAG (Retrieval Augmented Generation) combines large language models with external knowledge bases to provide accurate, contextual responses.", keywords: ["rag", "retrieval", "generation", "llm", "model"] },
+            { text: "Chunking is the process of splitting documents into smaller pieces. Smaller chunks provide more precise retrieval but may lose context.", keywords: ["chunking", "split", "chunks", "size", "pieces"] },
+            { text: "Embeddings convert text into numerical vectors that capture semantic meaning. Similar concepts have similar vector representations.", keywords: ["embedding", "vector", "numerical", "semantic", "meaning"] },
+            { text: "Vector databases like LanceDB, Pinecone, and pgvector store high-dimensional vectors and enable fast similarity search.", keywords: ["vector", "database", "lancedb", "pinecone", "storage", "store"] },
+            { text: "Cosine similarity measures the angle between two vectors. Values range from -1 (opposite) to 1 (identical direction).", keywords: ["cosine", "similarity", "distance", "measure", "angle"] },
+            { text: "HNSW (Hierarchical Navigable Small World) is an indexing algorithm that enables fast approximate nearest neighbor search.", keywords: ["hnsw", "index", "algorithm", "search", "fast"] },
+            { text: "Overlapping chunks help preserve context at boundaries. A typical overlap is 10-20% of chunk size.", keywords: ["overlap", "context", "boundary", "preserve"] },
+            { text: "OpenClaw uses LanceDB with nomic-embed-text for vector storage. Documents are chunked and embedded for retrieval.", keywords: ["openclaw", "lancedb", "nomic", "setup", "configuration"] },
+            { text: "Top-K retrieval returns the K most similar chunks. K is typically between 3 and 10 for RAG applications.", keywords: ["top-k", "retrieval", "k", "results", "return"] }
+        ];
+
+        function performSearch() {
+            const query = document.getElementById('queryInput').value.toLowerCase();
+            if (!query) return;
+            
+            const results = knowledgeBase.map(doc => {
+                // Calculate pseudo-similarity based on keyword matching
+                let matchScore = 0;
+                doc.keywords.forEach(kw => {
+                    if (query.includes(kw)) matchScore += 0.2;
+                });
+                
+                // Add some randomness for realism
+                const randomFactor = 0.3 + Math.random() * 0.3;
+                const similarity = Math.min(0.95, matchScore * randomFactor + 0.3);
+                
+                return {
+                    text: doc.text,
+                    similarity: similarity
+                };
+            }).sort((a, b) => b.similarity - a.similarity).slice(0, 5);
+            
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = results.map((r, i) => {
+                const relevance = r.similarity > 0.7 ? 'high' : r.similarity > 0.5 ? 'medium' : 'low';
+                return `
+                    <div class="result-item ${relevance}-relevance">
+                        <div class="relevance-score" style="color: ${r.similarity > 0.7 ? '#00ff88' : r.similarity > 0.5 ? '#ffaa00' : '#ff4444'}">
+                            ${(r.similarity * 100).toFixed(0)}%
+                        </div>
+                        <div class="result-content">${r.text}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Quiz
+        const quizQuestions = [
+            {
+                question: "What does RAG stand for?",
+                options: ["Random Access Generation", "Retrieval Augmented Generation", "Recursive Algorithm Graph", "Real-time Application Gateway"],
+                correct: 1,
+                explanation: "RAG stands for Retrieval Augmented Generation - it retrieves relevant information and uses it to augment the LLM's response generation."
+            },
+            {
+                question: "Why do we chunk documents?",
+                options: ["To make them smaller for storage", "To enable more precise retrieval", "Because LLMs can only read small texts", "To reduce costs"],
+                correct: 1,
+                explanation: "Chunking allows for more precise retrieval - smaller pieces can match specific queries better than entire documents."
+            },
+            {
+                question: "What is an embedding?",
+                options: ["A file format for documents", "A numerical vector representation of text", "A type of database", "A chunking strategy"],
+                correct: 1,
+                explanation: "Embeddings are numerical vectors that represent the semantic meaning of text in a high-dimensional space."
+            },
+            {
+                question: "Which database is optimized for vector similarity search?",
+                options: ["MySQL", "LanceDB", "Redis", "SQLite"],
+                correct: 1,
+                explanation: "LanceDB is a vector database specifically designed for storing and searching high-dimensional vectors efficiently."
+            },
+            {
+                question: "What is cosine similarity used for?",
+                options: ["Splitting text into chunks", "Measuring vector similarity", "Generating embeddings", "Storing documents"],
+                correct: 1,
+                explanation: "Cosine similarity measures the angle between two vectors - it's commonly used to determine how similar two embeddings are."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        function initQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            answered = false;
+            showQuestion();
+            document.getElementById('finalScore').style.display = 'none';
+            document.getElementById('restartBtn').style.display = 'none';
+        }
+
+        function showQuestion() {
+            const q = quizQuestions[currentQuestion];
+            document.getElementById('questionNumber').textContent = `Question ${currentQuestion + 1}/${quizQuestions.length}`;
+            document.getElementById('progressFill').style.width = `${((currentQuestion + 1) / quizQuestions.length) * 100}%`;
+            document.getElementById('scoreDisplay').textContent = `Score: ${score}`;
+            
+            const content = document.getElementById('quizContent');
+            content.innerHTML = `
+                <div class="question">
+                    <div class="question-text">${q.question}</div>
+                    <div class="options">
+                        ${q.options.map((opt, i) => `
+                            <div class="option" onclick="selectAnswer(${i})">${String.fromCharCode(65 + i)}. ${opt}</div>
+                        `).join('')}
+                    </div>
+                    <div class="explanation" id="explanation">${q.explanation}</div>
+                </div>
+            `;
+            
+            document.getElementById('nextBtn').style.display = 'none';
+            answered = false;
+        }
+
+        function selectAnswer(index) {
+            if (answered) return;
+            answered = true;
+            
+            const q = quizQuestions[currentQuestion];
+            const options = document.querySelectorAll('.option');
+            
+            options.forEach((opt, i) => {
+                if (i === q.correct) {
+                    opt.classList.add('correct');
+                } else if (i === index && i !== q.correct) {
+                    opt.classList.add('incorrect');
+                }
+            });
+            
+            if (index === q.correct) {
+                score++;
+            }
+            
+            document.getElementById('explanation').classList.add('show');
+            document.getElementById('scoreDisplay').textContent = `Score: ${score}`;
+            
+            if (currentQuestion < quizQuestions.length - 1) {
+                document.getElementById('nextBtn').style.display = 'inline-block';
+            } else {
+                showFinalScore();
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            answered = false;
+            showQuestion();
+        }
+
+        function showFinalScore() {
+            document.getElementById('finalScore').style.display = 'block';
+            document.getElementById('finalScoreValue').textContent = `${score}/${quizQuestions.length}`;
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('restartBtn').style.display = 'inline-block';
+        }
+
+        function restartQuiz() {
+            initQuiz();
+        }
+
+        // Matching Game
+        const matchingData = [
+            { concept: "Chunking", description: "Splitting documents into smaller pieces" },
+            { concept: "Embedding", description: "Converting text to numerical vectors" },
+            { concept: "Vector DB", description: "Specialized database for similarity search" },
+            { concept: "Similarity", description: "Measuring how close two vectors are" },
+            { concept: "HNSW", description: "Fast indexing algorithm for vectors" },
+            { concept: "Top-K", description: "Returning K most similar results" }
+        ];
+
+        let gameMatches = 0;
+        let gameAttempts = 0;
+        let selectedConcept = null;
+        let matchedPairs = [];
+
+        function initGame() {
+            gameMatches = 0;
+            gameAttempts = 0;
+            selectedConcept = null;
+            matchedPairs = [];
+            document.getElementById('matchScore').textContent = '0';
+            document.getElementById('attempts').textContent = '0';
+            
+            // Shuffle descriptions
+            const shuffledDescriptions = [...matchingData].sort(() => Math.random() - 0.5);
+            
+            const conceptsContainer = document.getElementById('concepts');
+            const descriptionsContainer = document.getElementById('descriptions');
+            
+            conceptsContainer.innerHTML = matchingData.map((item, i) => `
+                <div class="matching-item" data-index="${i}" onclick="selectConcept(${i})">${item.concept}</div>
+            `).join('');
+            
+            descriptionsContainer.innerHTML = shuffledDescriptions.map((item, i) => `
+                <div class="matching-item" data-concept="${matchingData.indexOf(item)}" onclick="selectDescription(${matchingData.indexOf(item)})">${item.description}</div>
+            `).join('');
+        }
+
+        function selectConcept(index) {
+            if (matchedPairs.includes(index)) return;
+            
+            document.querySelectorAll('#concepts .matching-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            selectedConcept = index;
+            document.querySelector(`#concepts .matching-item[data-index="${index}"]`).classList.add('selected');
+        }
+
+        function selectDescription(conceptIndex) {
+            if (!selectedConcept || matchedPairs.includes(conceptIndex)) return;
+            
+            gameAttempts++;
+            document.getElementById('attempts').textContent = gameAttempts;
+            
+            const descItem = document.querySelector(`#descriptions .matching-item[data-concept="${conceptIndex}"]`);
+            const conceptItem = document.querySelector(`#concepts .matching-item[data-index="${selectedConcept}"]`);
+            
+            if (selectedConcept === conceptIndex) {
+                // Correct match
+                gameMatches++;
+                document.getElementById('matchScore').textContent = gameMatches;
+                
+                conceptItem.classList.remove('selected');
+                conceptItem.classList.add('matched');
+                descItem.classList.add('matched');
+                
+                matchedPairs.push(selectedConcept);
+                
+                if (gameMatches === matchingData.length) {
+                    setTimeout(() => alert(`🎉 Congratulations! You matched all ${gameMatches} pairs in ${gameAttempts} attempts!`), 300);
+                }
+            } else {
+                // Wrong match
+                descItem.style.animation = 'shake 0.5s';
+                setTimeout(() => descItem.style.animation = '', 500);
+            }
+            
+            selectedConcept = null;
+            conceptItem.classList.remove('selected');
+        }
+
+        function resetGame() {
+            initGame();
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateChunking();
+        });
+    </script>
+</body>
+</html>
