@@ -492,6 +492,32 @@
             cursor: default;
         }
 
+        .matching-item.wrong {
+            border-color: #ff4444;
+            background: rgba(255,68,68,0.2);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .matching-item.selected-desc {
+            border-color: #ffaa00;
+            background: rgba(255,170,0,0.1);
+        }
+
+        .game-instructions {
+            text-align: center;
+            padding: 15px;
+            background: rgba(123,44,191,0.2);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: #e4e4e4;
+        }
+
         .game-controls {
             text-align: center;
             margin: 20px 0;
@@ -1116,7 +1142,10 @@ const results = await table
         <div id="game" class="section">
             <h2>RAG Matching Game 🎮</h2>
             
-            <p>Match each RAG concept with its correct description!</p>
+            <div class="game-instructions">
+                <strong>How to play:</strong> Click a concept on the left (it turns <span style="color:#00d4ff">blue</span>), 
+                then click its matching description on the right. Correct matches turn <span style="color:#00ff88">green</span>!
+            </div>
 
             <div class="game-stats">
                 <div class="stat-item">
@@ -1521,73 +1550,114 @@ const results = await table
         let gameMatches = 0;
         let gameAttempts = 0;
         let selectedConcept = null;
+        let selectedDescElement = null;
         let matchedPairs = [];
 
         function initGame() {
             gameMatches = 0;
             gameAttempts = 0;
             selectedConcept = null;
+            selectedDescElement = null;
             matchedPairs = [];
             document.getElementById('matchScore').textContent = '0';
             document.getElementById('attempts').textContent = '0';
             
-            // Shuffle descriptions
+            // Shuffle descriptions randomly
             const shuffledDescriptions = [...matchingData].sort(() => Math.random() - 0.5);
             
             const conceptsContainer = document.getElementById('concepts');
             const descriptionsContainer = document.getElementById('descriptions');
             
+            // Render concepts (left column)
             conceptsContainer.innerHTML = matchingData.map((item, i) => `
                 <div class="matching-item" data-index="${i}" onclick="selectConcept(${i})">${item.concept}</div>
             `).join('');
             
-            descriptionsContainer.innerHTML = shuffledDescriptions.map((item, i) => `
-                <div class="matching-item" data-concept="${matchingData.indexOf(item)}" onclick="selectDescription(${matchingData.indexOf(item)})">${item.description}</div>
+            // Render descriptions (right column) - shuffled
+            descriptionsContainer.innerHTML = shuffledDescriptions.map((item) => `
+                <div class="matching-item" data-concept="${matchingData.indexOf(item)}" onclick="selectDescription(this, ${matchingData.indexOf(item)})">${item.description}</div>
             `).join('');
         }
 
         function selectConcept(index) {
             if (matchedPairs.includes(index)) return;
             
+            // Clear previous selection
             document.querySelectorAll('#concepts .matching-item').forEach(item => {
                 item.classList.remove('selected');
             });
+            document.querySelectorAll('#descriptions .matching-item').forEach(item => {
+                if (!item.classList.contains('matched')) {
+                    item.classList.remove('selected-desc');
+                }
+            });
             
             selectedConcept = index;
-            document.querySelector(`#concepts .matching-item[data-index="${index}"]`).classList.add('selected');
+            selectedDescElement = null;
+            
+            // Highlight selected concept
+            const conceptItem = document.querySelector(`#concepts .matching-item[data-index="${index}"]`);
+            if (conceptItem) {
+                conceptItem.classList.add('selected');
+            }
         }
 
-        function selectDescription(conceptIndex) {
-            if (!selectedConcept || matchedPairs.includes(conceptIndex)) return;
+        function selectDescription(element, conceptIndex) {
+            // If no concept selected, show hint
+            if (selectedConcept === null) {
+                element.classList.add('wrong');
+                setTimeout(() => element.classList.remove('wrong'), 500);
+                return;
+            }
+            
+            // If already matched, ignore
+            if (matchedPairs.includes(conceptIndex)) return;
             
             gameAttempts++;
             document.getElementById('attempts').textContent = gameAttempts;
             
-            const descItem = document.querySelector(`#descriptions .matching-item[data-concept="${conceptIndex}"]`);
             const conceptItem = document.querySelector(`#concepts .matching-item[data-index="${selectedConcept}"]`);
             
             if (selectedConcept === conceptIndex) {
-                // Correct match
+                // Correct match!
                 gameMatches++;
                 document.getElementById('matchScore').textContent = gameMatches;
                 
                 conceptItem.classList.remove('selected');
                 conceptItem.classList.add('matched');
-                descItem.classList.add('matched');
+                element.classList.remove('selected-desc');
+                element.classList.add('matched');
                 
                 matchedPairs.push(selectedConcept);
+                selectedConcept = null;
                 
                 if (gameMatches === matchingData.length) {
-                    setTimeout(() => alert(`🎉 Congratulations! You matched all ${gameMatches} pairs in ${gameAttempts} attempts!`), 300);
+                    setTimeout(() => {
+                        const congratsDiv = document.createElement('div');
+                        congratsDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,#7b2cbf,#00d4ff);padding:30px 50px;border-radius:20px;text-align:center;z-index:1000;box-shadow:0 10px 50px rgba(0,0,0,0.5);';
+                        congratsDiv.innerHTML = `
+                            <div style="font-size:3em;margin-bottom:10px;">🎉</div>
+                            <div style="font-size:1.5em;font-weight:bold;">Congratulations!</div>
+                            <div style="margin-top:10px;">You matched all ${gameMatches} pairs in ${gameAttempts} attempts!</div>
+                        `;
+                        document.body.appendChild(congratsDiv);
+                        setTimeout(() => congratsDiv.remove(), 3000);
+                    }, 300);
                 }
             } else {
-                // Wrong match
-                descItem.style.animation = 'shake 0.5s';
-                setTimeout(() => descItem.style.animation = '', 500);
+                // Wrong match - show visual feedback
+                element.classList.add('wrong');
+                conceptItem.classList.add('wrong');
+                
+                setTimeout(() => {
+                    element.classList.remove('wrong');
+                    conceptItem.classList.remove('wrong');
+                }, 600);
+                
+                // Clear selection
+                conceptItem.classList.remove('selected');
+                selectedConcept = null;
             }
-            
-            selectedConcept = null;
-            conceptItem.classList.remove('selected');
         }
 
         function resetGame() {
