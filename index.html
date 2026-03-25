@@ -3,975 +3,1333 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LLM Embeddings & Attention - Interactive Guide</title>
+    <title>RAG Adventure for Kids! 🦁</title>
     <style>
+        :root {
+            --bg-color: #FAFAFA;
+            --primary: #007AFF;
+            --secondary: #AF52DE;
+            --accent: #FF9500;
+            --success: #34C759;
+            --error: #FF3B30;
+            --text: #1D1D1F;
+            --card-bg: #FFFFFF;
+            --soft-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --rounded: 16px;
+            --font: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', sans-serif;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: #eee;
+            font-family: var(--font);
+            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F7 100%);
+            color: var(--text);
             min-height: 100vh;
             padding: 20px;
+            overflow-x: hidden;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        h1 {
+
+        /* Header & Navigation */
+        header {
             text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        h1 {
             font-size: 2.5em;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
+            margin-bottom: 10px;
         }
-        
-        h2 {
-            color: #00d9ff;
-            margin: 30px 0 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #00d9ff33;
+
+        .subtitle {
+            font-size: 1.1em;
+            color: #8E8E93;
         }
-        
-        h3 {
-            color: #00ff88;
-            margin: 20px 0 10px;
+
+        .progress-container {
+            background: #E5E5EA;
+            border-radius: 12px;
+            height: 24px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 20px;
+            overflow: hidden;
         }
-        
-        p {
-            line-height: 1.8;
-            margin-bottom: 15px;
-            color: #ccc;
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            height: 100%;
+            width: 0%;
+            border-radius: 12px;
+            transition: width 0.5s ease;
         }
-        
-        .section {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 25px;
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
             margin-bottom: 30px;
-            border: 1px solid rgba(255,255,255,0.1);
+            flex-wrap: wrap;
         }
-        
-        .interactive-box {
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-            padding: 20px;
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 1em;
+            cursor: pointer;
+            box-shadow: var(--soft-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Main Content */
+        .content-section {
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: var(--rounded);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--soft-shadow);
+            animation: fadeIn 0.8s ease;
+        }
+
+        /* Mascots */
+        .mascot {
+            font-size: 3em;
+            text-align: center;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        /* Interactive Games */
+        .game-area {
+            background: linear-gradient(135deg, #E8F4FD 0%, #F0F4FF 100%);
+            border-radius: var(--rounded);
+            padding: 24px;
+            min-height: 300px;
+            position: relative;
+        }
+
+        /* Pizza Slicing Game */
+        .pizza-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+        }
+
+        .pizza {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #FFCC80 20%, #F48FB1 40%, #A1887F 60%);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .pizza:hover {
+            transform: scale(1.05);
+        }
+
+        .topping {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #8D6E63;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+        }
+
+        /* Embedding Space */
+        .embedding-space {
+            width: 100%;
+            height: 300px;
+            background: white;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .word-node {
+            position: absolute;
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border-radius: 20px;
+            cursor: grab;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .word-node:active {
+            cursor: grabbing;
+        }
+
+        /* Vector Detective */
+        .detective-area {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .magnifying-glass {
+            font-size: 4em;
+            cursor: pointer;
+            margin: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .search-box {
+            padding: 12px 24px;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            font-size: 1em;
+            width: 300px;
+            text-align: center;
             margin: 20px 0;
         }
-        
-        /* Embedding Visualization */
-        .embedding-demo {
+
+        /* RAG Pipeline Game */
+        .pipeline-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .pipeline-step {
+            padding: 16px 24px;
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            cursor: grab;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .pipeline-slot {
+            width: 180px;
+            height: 60px;
+            border: 2px dashed #E5E5EA;
+            border-radius: 12px;
+            margin: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #FAFAFA;
+        }
+
+        /* Memory Match Game */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            background: var(--primary);
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .memory-card.flipped {
+            background: white;
+            border: 2px solid var(--primary);
+            transform: rotateY(180deg);
+        }
+
+        .memory-card.matched {
+            background: var(--success);
+            border: none;
+            transform: rotateY(180deg) scale(0.9);
+        }
+
+        .memory-card-content {
+            position: absolute;
+            transform: rotateY(180deg);
+        }
+
+        /* Quiz Game */
+        .quiz-option {
+            width: 100%;
+            padding: 16px;
+            margin: 10px 0;
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+
+        .quiz-option:hover {
+            background: #E8F4FD;
+        }
+
+        .quiz-option.correct {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .quiz-option.wrong {
+            background: var(--error);
+            color: white;
+            border-color: var(--error);
+        }
+
+        /* Badges & Rewards */
+        .badge-container {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
             justify-content: center;
-            margin: 20px 0;
-        }
-        
-        .word-box {
-            background: linear-gradient(145deg, #2a2a4a, #1a1a3a);
-            padding: 15px 25px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 2px solid transparent;
-        }
-        
-        .word-box:hover {
-            transform: translateY(-5px);
-            border-color: #00d9ff;
-        }
-        
-        .word-box.selected {
-            border-color: #00ff88;
-            box-shadow: 0 0 20px rgba(0,255,136,0.3);
-        }
-        
-        .vector-display {
-            font-family: monospace;
-            font-size: 0.75em;
-            color: #00d9ff;
-            margin-top: 10px;
-            max-width: 200px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .similarity-result {
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(145deg, #1a3a2a, #0a2a1a);
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-        
-        /* Vector Space Visualization */
-        #vectorSpace {
-            background: rgba(0,0,0,0.5);
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-        
-        /* Attention Visualization */
-        .attention-sentence {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin: 20px 0;
-        }
-        
-        .token {
-            padding: 10px 15px;
-            background: #2a2a4a;
-            border-radius: 5px;
-            transition: all 0.3s;
-        }
-        
-        .attention-grid {
-            display: grid;
-            gap: 5px;
-            margin: 20px 0;
-        }
-        
-        .attention-row {
-            display: flex;
-            gap: 5px;
-            justify-content: center;
-        }
-        
-        .attention-cell {
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8em;
-            border-radius: 5px;
-            transition: all 0.3s;
-        }
-        
-        /* Comparison Section */
-        .comparison-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin: 20px 0;
-        }
-        
-        @media (max-width: 768px) {
-            .comparison-container {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .concept-card {
-            background: linear-gradient(145deg, #2a2a4a, #1a1a3a);
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .concept-card h4 {
-            color: #00d9ff;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        /* Transition Layer */
-        .layer-visual {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
             margin: 30px 0;
-            flex-wrap: wrap;
         }
-        
-        .layer-box {
-            background: linear-gradient(145deg, #1a3a5a, #0a2a4a);
-            padding: 20px;
-            border-radius: 10px;
+
+        .badge {
+            padding: 16px;
+            background: white;
+            border-radius: 16px;
             text-align: center;
-            min-width: 150px;
+            box-shadow: var(--soft-shadow);
+            transition: all 0.3s ease;
         }
-        
-        .arrow {
-            font-size: 2em;
-            color: #00ff88;
+
+        .badge-icon {
+            font-size: 2.5em;
+            margin-bottom: 8px;
         }
-        
-        /* Buttons */
-        .btn {
-            background: linear-gradient(145deg, #00d9ff, #0088aa);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: all 0.3s;
-            margin: 5px;
-        }
-        
-        .btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(0,217,255,0.5);
-        }
-        
-        .btn.active {
-            background: linear-gradient(145deg, #00ff88, #00aa55);
-        }
-        
-        /* Input */
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        input[type="text"] {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 1em;
-            width: 300px;
-            max-width: 100%;
-        }
-        
-        input[type="text"]::placeholder {
-            color: #888;
-        }
-        
-        /* Info boxes */
-        .info-box {
-            background: rgba(0,217,255,0.1);
-            border-left: 4px solid #00d9ff;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 0 10px 10px 0;
-        }
-        
-        .warning-box {
-            background: rgba(255,200,0,0.1);
-            border-left: 4px solid #ffc800;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 0 10px 10px 0;
-        }
-        
-        /* Code blocks */
-        code {
-            background: rgba(0,0,0,0.5);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            color: #00ff88;
-        }
-        
-        pre {
-            background: rgba(0,0,0,0.5);
-            padding: 15px;
-            border-radius: 10px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
+
+        .badge-name {
+            font-weight: bold;
             font-size: 0.9em;
         }
-        
-        /* Quiz section */
-        .quiz-container {
-            margin: 20px 0;
+
+        .badge-unlocked {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            animation: pulse 2s infinite;
         }
-        
-        .quiz-question {
-            background: rgba(0,255,136,0.1);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
+
+        /* Tooltips */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
         }
-        
-        .quiz-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .quiz-option {
-            background: rgba(255,255,255,0.1);
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .quiz-option:hover {
-            background: rgba(0,217,255,0.3);
-        }
-        
-        .quiz-option.correct {
-            background: rgba(0,255,136,0.5);
-            border: 2px solid #00ff88;
-        }
-        
-        .quiz-option.incorrect {
-            background: rgba(255,0,0,0.3);
-            border: 2px solid #ff4444;
-        }
-        
-        footer {
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: white;
             text-align: center;
-            margin-top: 50px;
-            padding: 20px;
-            color: #666;
+            border-radius: 8px;
+            padding: 12px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Animations */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes confetti {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(100px, -200px) rotate(720deg); opacity: 0; }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            top: 0;
+            left: 50%;
+            z-index: 1000;
+        }
+
+        /* Button Styles */
+        .action-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .action-btn:hover {
+            background: #0062CC;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .nav-tabs { gap: 10px; }
+            .nav-tab { padding: 10px 16px; }
+            .memory-grid { grid-template-columns: repeat(3, 1fr); }
+            .pipeline-step { padding: 12px 16px; }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.8em; }
+            .card { padding: 16px; }
+            .pizza-container { width: 150px; height: 150px; }
+            .quiz-option { padding: 12px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🧠 LLM Embeddings & Attention</h1>
-        <p style="text-align: center; color: #888;">Interactive guide to understanding how language models process text</p>
-        
-        <!-- Section 1: What are Embeddings? -->
-        <div class="section">
-            <h2>1. What are Embeddings?</h2>
-            <p>
-                Embeddings are numerical representations of words, sentences, or concepts. They convert text into vectors 
-                (lists of numbers) that capture semantic meaning. Words with similar meanings have similar vectors!
-            </p>
-            
-            <div class="info-box">
-                <strong>Key Insight:</strong> In embedding space, "king - man + woman ≈ queen" because the vector 
-                relationships capture semantic concepts!
-            </div>
-            
-            <h3>Try it: Click two words to compare their similarity</h3>
-            
-            <div class="interactive-box">
-                <div class="embedding-demo" id="embeddingDemo">
-                    <!-- Words will be inserted by JS -->
-                </div>
-                <div class="similarity-result" id="similarityResult">
-                    <p>Select two words to see their similarity</p>
-                </div>
-            </div>
-            
-            <h3>2D Visualization of Word Embeddings</h3>
-            <p>Words that are closer together have more similar meanings:</p>
-            <canvas id="vectorSpace" width="800" height="400"></canvas>
-            
-            <div class="input-group">
-                <input type="text" id="customWord" placeholder="Add a custom word...">
-                <button class="btn" onclick="addCustomWord()">Add to Space</button>
-            </div>
+    <header>
+        <h1>🎓 RAG Adventure 🚀</h1>
+        <p class="subtitle">Learn how AI systems think and learn! 🤖</p>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
         </div>
-        
-        <!-- Section 2: Attention Mechanism -->
-        <div class="section">
-            <h2>2. Attention Mechanism</h2>
-            <p>
-                The attention mechanism allows the model to focus on different parts of the input when processing each word.
-                It answers: "When processing this word, which other words should I pay attention to?"
-            </p>
-            
-            <div class="warning-box">
-                <strong>Why it matters:</strong> In "The cat sat on the mat", when processing "it", the model needs 
-                to know "it" refers to "cat" - attention weights make this possible!
-            </div>
-            
-            <h3>Interactive: See how attention works</h3>
-            <p>Click on a word to see what other words it "attends to":</p>
-            
-            <div class="interactive-box">
-                <div class="attention-sentence" id="attentionSentence">
-                    <!-- Tokens will be inserted by JS -->
-                </div>
-                
-                <div style="text-align: center; margin: 20px 0;">
-                    <button class="btn" onclick="setSentence('The cat sat on the mat')">Simple</button>
-                    <button class="btn" onclick="setSentence('The bank of the river and the bank of money')">Ambiguous</button>
-                    <button class="btn" onclick="setSentence('It was raining so she took her umbrella')">Reference</button>
-                </div>
-                
-                <div class="similarity-result" id="attentionExplanation">
-                    <p>Click on a word to see attention weights</p>
-                </div>
-            </div>
-            
-            <h3>Self-Attention Formula</h3>
-            <pre>
-Attention(Q, K, V) = softmax(QK<sup>T</sup> / √d<sub>k</sub>) × V
+    </header>
 
-Where:
-- Q (Query): "What am I looking for?"
-- K (Key): "What do I contain?"
-- V (Value): "What do I represent?"
-- d<sub>k</sub>: Dimension of keys (for scaling)
-            </pre>
-        </div>
-        
-        <!-- Section 3: Semantic Comparisons -->
-        <div class="section">
-            <h2>3. Semantic Comparisons</h2>
-            <p>
-                Embeddings allow us to compare meanings mathematically. Let's explore how similar concepts 
-                relate to each other in vector space.
-            </p>
-            
-            <h3>Compare: Computer vs Car</h3>
-            <div class="comparison-container">
-                <div class="concept-card">
-                    <h4>💻 Computer</h4>
-                    <p><strong>Category:</strong> Electronic device</p>
-                    <p><strong>Function:</strong> Processes information</p>
-                    <p><strong>Power:</strong> Electricity</p>
-                    <p><strong>Parts:</strong> CPU, RAM, Storage</p>
-                    <p><strong>Evolution:</strong> 1940s - present</p>
-                </div>
-                <div class="concept-card">
-                    <h4>🚗 Car</h4>
-                    <p><strong>Category:</strong> Mechanical vehicle</p>
-                    <p><strong>Function:</strong> Transports people/goods</p>
-                    <p><strong>Power:</strong> Fuel/Electricity</p>
-                    <p><strong>Parts:</strong> Engine, Wheels, Chassis</p>
-                    <p><strong>Evolution:</strong> 1886 - present</p>
-                </div>
-            </div>
-            
-            <div class="interactive-box">
-                <h4>Embedding Similarity Analysis</h4>
-                <div id="comparisonResult">
-                    <p>Loading comparison...</p>
-                </div>
-                <canvas id="comparisonChart" width="600" height="300"></canvas>
-            </div>
-            
-            <h3>Try Other Comparisons</h3>
-            <div class="input-group">
-                <input type="text" id="word1" placeholder="First word (e.g., dog)" value="dog">
-                <input type="text" id="word2" placeholder="Second word (e.g., wolf)" value="wolf">
-                <button class="btn" onclick="compareWords()">Compare</button>
-            </div>
-            <div id="customComparison" class="similarity-result">
-                <!-- Results will appear here -->
-            </div>
-        </div>
-        
-        <!-- Section 4: Transition Layers -->
-        <div class="section">
-            <h2>4. Transition Layers (Feed-Forward Networks)</h2>
-            <p>
-                After attention, each token passes through a feed-forward network. This is where the model 
-                "thinks" about what it learned from attention and transforms it.
-            </p>
-            
-            <div class="layer-visual">
-                <div class="layer-box">
-                    <strong>Input</strong>
-                    <p style="color: #00d9ff;">[Attention Output]</p>
-                    <p style="font-size: 0.8em;">d_model = 768</p>
-                </div>
-                <div class="arrow">→</div>
-                <div class="layer-box">
-                    <strong>Layer 1</strong>
-                    <p style="color: #00ff88;">Linear</p>
-                    <p style="font-size: 0.8em;">768 → 3072</p>
-                </div>
-                <div class="arrow">→</div>
-                <div class="layer-box">
-                    <strong>Activation</strong>
-                    <p style="color: #ffaa00;">GELU/ReLU</p>
-                    <p style="font-size: 0.8em;">non-linear</p>
-                </div>
-                <div class="arrow">→</div>
-                <div class="layer-box">
-                    <strong>Layer 2</strong>
-                    <p style="color: #00ff88;">Linear</p>
-                    <p style="font-size: 0.8em;">3072 → 768</p>
-                </div>
-                <div class="arrow">→</div>
-                <div class="layer-box">
-                    <strong>Output</strong>
-                    <p style="color: #00d9ff;">[Transformed]</p>
-                    <p style="font-size: 0.8em;">d_model = 768</p>
-                </div>
-            </div>
-            
-            <div class="info-box">
-                <strong>Why expand then contract?</strong> The expansion to 4x size (768 → 3072) allows the model 
-                to learn more complex representations. Think of it as "unfolding" the information to process it 
-                more thoroughly before "folding" it back.
-            </div>
-            
-            <h3>Interactive: See how dimensions change</h3>
-            <div class="interactive-box">
-                <p>Select a model to see its architecture:</p>
-                <div class="input-group">
-                    <button class="btn active" onclick="showModel('bert')">BERT-base</button>
-                    <button class="btn" onclick="showModel('gpt2')">GPT-2</button>
-                    <button class="btn" onclick="showModel('llama')">LLaMA-7B</button>
-                </div>
-                <div id="modelInfo">
-                    <pre>
-BERT-base Architecture:
-├── Embedding: vocab → 768
-├── 12 Transformer Layers
-│   ├── Multi-Head Attention (12 heads)
-│   ├── Layer Norm
-│   ├── Feed-Forward Network
-│   │   ├── Linear: 768 → 3072
-│   │   ├── GELU activation
-│   │   └── Linear: 3072 → 768
-│   └── Layer Norm
-└── Output: 768-dim vectors
+    <nav class="nav-tabs">
+        <button class="nav-tab active" onclick="showSection('home')">🏠 Home</button>
+        <button class="nav-tab" onclick="showSection('chunking')">🍕 Chunking</button>
+        <button class="nav-tab" onclick="showSection('embeddings')">🔮 Embeddings</button>
+        <button class="nav-tab" onclick="showSection('detective')">🔍 Detective</button>
+        <button class="nav-tab" onclick="showSection('pipeline')">🔧 Pipeline</button>
+        <button class="nav-tab" onclick="showSection('memory')">🃏 Memory</button>
+        <button class="nav-tab" onclick="showSection('quiz')">🎯 Quiz</button>
+        <button class="nav-tab" onclick="showSection('badges')">🏆 Badges</button>
+    </nav>
 
-Total Parameters: ~110M
-                    </pre>
+    <!-- Home Section -->
+    <section id="home" class="content-section active">
+        <div class="card">
+            <div class="mascot">🦁</div>
+            <h2>Welcome, Explorer! 👋</h2>
+            <p>Hi! I'm <strong>RAGbot</strong> and I'll help you learn how AI systems work. Think of AI as a super-smart librarian who needs your help to find the best information!</p>
+            
+            <div style="margin: 20px 0; padding: 16px; background: #E8F4FD; border-radius: 12px;">
+                <h3>🧠 How does AI learn?</h3>
+                <p>AI learns by reading lots of information, just like you do in school! But AI needs some special help to understand and remember things.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0;">
+                <div style="text-align: center;">
+                    <div style="font-size: 2.5em; margin-bottom: 8px;">📚</div>
+                    <p><strong>Documents</strong><br>AI reads lots of information</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 2.5em; margin-bottom: 8px;">✂️</div>
+                    <p><strong>Chunks</strong><br>Breaking into pieces</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 2.5em; margin-bottom: 8px;">🔢</div>
+                    <p><strong>Vectors</strong><br>Special number codes</p>
                 </div>
             </div>
+
+            <p>Let's start our adventure and become AI learning experts together! 🌟</p>
         </div>
-        
-        <!-- Quiz Section -->
-        <div class="section">
-            <h2>5. Test Your Knowledge</h2>
-            <div class="quiz-container" id="quizContainer">
-                <!-- Quiz will be loaded here -->
-            </div>
-            <div class="input-group">
-                <button class="btn" onclick="loadQuiz()">New Quiz</button>
-            </div>
+
+        <div class="card">
+            <h3>✨ Quick Tip: What do we call numbers that help AI understand?</h3>
+            <p style="margin: 10px 0;">We call them <span class="tooltip">Vectors<span class="tooltip-text">Special number codes that help AI understand relationships between words and ideas</span></span> - like secret codes for words!</p>
         </div>
-        
-        <footer>
-            <p>Built for learning | Interactive LLM Education Platform</p>
-            <p style="font-size: 0.8em;">Understand embeddings, attention, and how language models think</p>
-        </footer>
-    </div>
-    
-    <script>
-        // Word embeddings database (simplified 2D projections for visualization)
-        const wordEmbeddings = {
-            'cat': [0.8, 0.9, 0.2, 0.1, 0.5],
-            'dog': [0.85, 0.88, 0.25, 0.12, 0.48],
-            'car': [0.2, 0.3, 0.95, 0.85, 0.1],
-            'truck': [0.22, 0.32, 0.92, 0.88, 0.12],
-            'computer': [0.3, 0.25, 0.4, 0.35, 0.98],
-            'laptop': [0.32, 0.27, 0.42, 0.37, 0.95],
-            'king': [0.9, 0.1, 0.3, 0.2, 0.85],
-            'queen': [0.88, 0.15, 0.28, 0.18, 0.82],
-            'man': [0.7, 0.05, 0.35, 0.25, 0.6],
-            'woman': [0.72, 0.08, 0.32, 0.22, 0.58],
-            'apple': [0.1, 0.95, 0.15, 0.1, 0.3],
-            'banana': [0.12, 0.92, 0.18, 0.12, 0.28],
-            'run': [0.5, 0.6, 0.55, 0.5, 0.45],
-            'walk': [0.52, 0.58, 0.53, 0.48, 0.43],
-            'happy': [0.65, 0.7, 0.2, 0.15, 0.55],
-            'sad': [0.35, 0.3, 0.25, 0.2, 0.45]
-        };
-        
-        // 2D positions for visualization
-        const wordPositions2D = {
-            'cat': {x: 150, y: 280, color: '#ff6b6b'},
-            'dog': {x: 180, y: 260, color: '#ff6b6b'},
-            'puppy': {x: 190, y: 290, color: '#ff6b6b'},
-            'car': {x: 550, y: 150, color: '#4ecdc4'},
-            'truck': {x: 600, y: 170, color: '#4ecdc4'},
-            'vehicle': {x: 575, y: 130, color: '#4ecdc4'},
-            'computer': {x: 400, y: 350, color: '#45b7d1'},
-            'laptop': {x: 420, y: 380, color: '#45b7d1'},
-            'phone': {x: 450, y: 340, color: '#45b7d1'},
-            'king': {x: 650, y: 250, color: '#f9ca24'},
-            'queen': {x: 680, y: 280, color: '#f9ca24'},
-            'prince': {x: 670, y: 220, color: '#f9ca24'},
-            'apple': {x: 280, y: 100, color: '#e056fd'},
-            'banana': {x: 320, y: 120, color: '#e056fd'},
-            'fruit': {x: 300, y: 90, color: '#e056fd'},
-            'happy': {x: 100, y: 180, color: '#00d9ff'},
-            'sad': {x: 130, y: 220, color: '#00d9ff'}
-        };
-        
-        let selectedWords = [];
-        
-        // Cosine similarity
-        function cosineSimilarity(a, b) {
-            let dot = 0, normA = 0, normB = 0;
-            for (let i = 0; i < a.length; i++) {
-                dot += a[i] * b[i];
-                normA += a[i] * a[i];
-                normB += b[i] * b[i];
-            }
-            return dot / (Math.sqrt(normA) * Math.sqrt(normB));
-        }
-        
-        // Initialize embedding demo
-        function initEmbeddingDemo() {
-            const demo = document.getElementById('embeddingDemo');
-            const words = ['cat', 'dog', 'car', 'computer', 'king', 'queen', 'apple', 'happy'];
+    </section>
+
+    <!-- Chunking Game Section -->
+    <section id="chunking" class="content-section">
+        <div class="card">
+            <div class="mascot">🍕</div>
+            <h2>The Pizza Slicing Game! 🍕</h2>
+            <p>Imagine you have a huge pizza of information (a document). To make it easier to share, you need to slice it into smaller pieces!</p>
             
-            demo.innerHTML = words.map(word => `
-                <div class="word-box" onclick="selectWord('${word}')" id="word-${word}">
-                    <strong>${word}</strong>
-                    <div class="vector-display">[${wordEmbeddings[word].slice(0,3).map(v => v.toFixed(2)).join(', ')}...]</div>
-                </div>
-            `).join('');
-        }
-        
-        function selectWord(word) {
-            const box = document.getElementById(`word-${word}`);
-            
-            if (selectedWords.includes(word)) {
-                selectedWords = selectedWords.filter(w => w !== word);
-                box.classList.remove('selected');
-            } else if (selectedWords.length < 2) {
-                selectedWords.push(word);
-                box.classList.add('selected');
-            }
-            
-            if (selectedWords.length === 2) {
-                const sim = cosineSimilarity(wordEmbeddings[selectedWords[0]], wordEmbeddings[selectedWords[1]]);
-                document.getElementById('similarityResult').innerHTML = `
-                    <p><strong>${selectedWords[0]}</strong> vs <strong>${selectedWords[1]}</strong></p>
-                    <p style="font-size: 2em; color: ${sim > 0.8 ? '#00ff88' : sim > 0.5 ? '#ffc800' : '#ff4444'}">${(sim * 100).toFixed(1)}%</p>
-                    <p>${sim > 0.8 ? 'Very similar! These words often appear in similar contexts.' : 
-                        sim > 0.5 ? 'Somewhat related. They share some semantic features.' : 
-                        'Not similar. These words have different meanings.'}</p>
-                `;
-            } else {
-                document.getElementById('similarityResult').innerHTML = '<p>Select two words to compare</p>';
-            }
-        }
-        
-        // Draw vector space
-        function drawVectorSpace() {
-            const canvas = document.getElementById('vectorSpace');
-            const ctx = canvas.getContext('2d');
-            
-            // Clear
-            ctx.fillStyle = 'rgba(0,0,0,0.5)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw grid
-            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-            ctx.lineWidth = 1;
-            for (let i = 0; i <= 10; i++) {
-                ctx.beginPath();
-                ctx.moveTo(i * 80, 0);
-                ctx.lineTo(i * 80, canvas.height);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(0, i * 40);
-                ctx.lineTo(canvas.width, i * 40);
-                ctx.stroke();
-            }
-            
-            // Draw words
-            for (const [word, pos] of Object.entries(wordPositions2D)) {
-                // Circle
-                ctx.beginPath();
-                ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
-                ctx.fillStyle = pos.color + '40';
-                ctx.fill();
-                ctx.strokeStyle = pos.color;
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                
-                // Label
-                ctx.fillStyle = '#fff';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(word, pos.x, pos.y + 35);
-            }
-        }
-        
-        // Attention sentences
-        const attentionData = {
-            'The cat sat on the mat': {
-                tokens: ['The', 'cat', 'sat', 'on', 'the', 'mat'],
-                attention: {
-                    'The': {'cat': 0.8, 'sat': 0.1, 'mat': 0.05, 'The': 0.03, 'on': 0.01, 'the': 0.01},
-                    'cat': {'The': 0.7, 'sat': 0.2, 'mat': 0.05, 'cat': 0.03, 'on': 0.01, 'the': 0.01},
-                    'sat': {'cat': 0.6, 'mat': 0.3, 'on': 0.05, 'sat': 0.03, 'The': 0.01, 'the': 0.01},
-                    'on': {'sat': 0.4, 'mat': 0.4, 'cat': 0.1, 'the': 0.05, 'on': 0.04, 'The': 0.01},
-                    'the': {'mat': 0.8, 'on': 0.1, 'the': 0.05, 'sat': 0.03, 'cat': 0.01, 'The': 0.01},
-                    'mat': {'the': 0.7, 'on': 0.15, 'sat': 0.1, 'mat': 0.03, 'cat': 0.01, 'The': 0.01}
-                }
-            },
-            'The bank of the river and the bank of money': {
-                tokens: ['The', 'bank', 'of', 'river', 'and', 'the', 'bank', 'of', 'money'],
-                attention: {
-                    'bank': {'river': 0.6, 'money': 0.3, 'The': 0.05, 'bank': 0.03, 'of': 0.01, 'and': 0.01}
-                }
-            },
-            'It was raining so she took her umbrella': {
-                tokens: ['It', 'was', 'raining', 'so', 'she', 'took', 'her', 'umbrella'],
-                attention: {
-                    'It': {'raining': 0.7, 'was': 0.15, 'she': 0.1, 'umbrella': 0.03, 'It': 0.01, 'so': 0.01},
-                    'umbrella': {'her': 0.6, 'took': 0.2, 'raining': 0.1, 'umbrella': 0.05, 'she': 0.03, 'It': 0.02},
-                    'she': {'took': 0.5, 'her': 0.3, 'umbrella': 0.1, 'raining': 0.05, 'she': 0.03, 'It': 0.02}
-                }
-            }
-        };
-        
-        let currentSentence = 'The cat sat on the mat';
-        
-        function setSentence(sentence) {
-            currentSentence = sentence;
-            const tokens = attentionData[sentence]?.tokens || sentence.split(' ');
-            const container = document.getElementById('attentionSentence');
-            container.innerHTML = tokens.map((t, i) => 
-                `<div class="token" onclick="showAttention('${t}')" id="token-${i}">${t}</div>`
-            ).join('');
-            document.getElementById('attentionExplanation').innerHTML = '<p>Click on a word to see attention weights</p>';
-        }
-        
-        function showAttention(token) {
-            const data = attentionData[currentSentence];
-            if (!data || !data.attention[token]) {
-                document.getElementById('attentionExplanation').innerHTML = `
-                    <p><strong>${token}</strong> attends to:</p>
-                    <p style="color: #888;">Attention data not available for this token</p>
-                `;
-                return;
-            }
-            
-            const weights = data.attention[token];
-            const tokens = data.tokens;
-            
-            let html = `<p><strong>"${token}"</strong> attends to:</p><div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">`;
-            
-            for (const t of tokens) {
-                const w = weights[t] || 0.01;
-                const intensity = Math.floor(w * 255);
-                html += `
-                    <div style="text-align: center; padding: 10px;">
-                        <div style="font-size: 1.2em;">${t}</div>
-                        <div style="color: rgb(${255-intensity}, ${intensity}, ${Math.floor(intensity/2)}); font-weight: bold;">
-                            ${(w * 100).toFixed(0)}%
-                        </div>
+            <div class="game-area">
+                <div class="pizza-container">
+                    <div class="pizza" id="pizza" onclick="slicePizza()">
+                        <!-- Toppings will be added by JavaScript -->
                     </div>
-                `;
-            }
-            html += '</div>';
-            document.getElementById('attentionExplanation').innerHTML = html;
+                </div>
+                <p id="pizza-message" style="text-align: center; font-size: 1.2em;">Click the pizza to slice it!</p>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <h3>Slicing Challenge</h3>
+                <p>Click the pizza to slice it into delicious pieces. Each slice represents a chunk of information!</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🤔 Why do we need to slice documents?</h3>
+            <p style="margin: 10px 0;">When AI reads a huge document, it's like trying to eat an entire pizza in one bite! We need to slice it into smaller pieces so AI can understand each part better.</p>
+            <div style="background: #F0F4FF; padding: 16px; border-radius: 12px; margin: 16px 0;">
+                <p><strong>Real Example:</strong> If you have a 100-page book, AI might read it 10 pages at a time instead of all at once!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Embeddings Section -->
+    <section id="embeddings" class="content-section">
+        <div class="card">
+            <div class="mascot">🔮</div>
+            <h2>Embedding Space Explorer! 🔮</h2>
+            <p>Words have magic number codes called <span class="tooltip">Embeddings<span class="tooltip-text">Magic number codes that help AI understand what words mean and how they're related</span></span>! Words with similar meanings have similar codes and end up close together.</p>
+            
+            <div class="game-area">
+                <div class="embedding-space" id="embeddingSpace">
+                    <!-- Word nodes will be added by JavaScript -->
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <p>Drag words around! Notice how similar words (like "cat" and "dog") like to stay close together, while different words (like "car") go far away!</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>💡 Try this experiment:</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin: 20px 0;">
+                <div style="text-align: center; padding: 16px; background: #E8F4FD; border-radius: 12px;">
+                    <div style="font-size: 2em; margin-bottom: 8px;">🐶</div>
+                    <p><strong>Cat</strong></p>
+                </div>
+                <div style="text-align: center; padding: 16px; background: #E8F4FD; border-radius: 12px;">
+                    <div style="font-size: 2em; margin-bottom: 8px;">🐱</div>
+                    <p><strong>Dog</strong></p>
+                </div>
+                <div style="text-align: center; padding: 16px; background: #E8F4FD; border-radius: 12px;">
+                    <div style="font-size: 2em; margin-bottom: 8px;">🚗</div>
+                    <p><strong>Car</strong></p>
+                </div>
+            </div>
+            <p>See how "cat" and "dog" are both pets and stay close, but "car" is different and goes far away? That's the magic of embeddings! ✨</p>
+        </div>
+    </section>
+
+    <!-- Vector Detective Section -->
+    <section id="detective" class="content-section">
+        <div class="card">
+            <div class="mascot">🔍</div>
+            <h2>Vector Detective! 🔍</h2>
+            <p>Use the magic magnifying glass to find similar ideas! When you search for something, AI looks for similar <span class="tooltip">Vectors<span class="tooltip-text">Special number codes that help AI find matching ideas</span></span> in its memory.</p>
+            
+            <div class="detective-area">
+                <div class="magnifying-glass" onclick="findSimilar()">🔍</div>
+                <p>Click the magnifying glass to search for similar ideas!</p>
+                
+                <div style="margin: 20px 0;">
+                    <input type="text" class="search-box" id="searchInput" placeholder="Search for something (try: 'animal', 'fruit', 'vehicle')">
+                </div>
+
+                <div id="searchResults" style="margin: 20px 0; min-height: 100px; padding: 16px; background: #FAFAFA; border-radius: 12px;">
+                    <p>Try searching for "animal" to see similar ideas!</p>
+                </div>
+
+                <button class="action-btn" onclick="findSimilar()">🔍 Find Similar!</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🕵️ How Vector Detective Works:</h3>
+            <p>When you type something, AI converts it into a special number code (vector). Then it searches its memory for similar codes! It's like having a super-fast librarian who finds books on similar topics instantly.</p>
+            
+            <div style="background: #E8F4FD; padding: 16px; border-radius: 12px; margin: 16px 0;">
+                <p><strong>Example:</strong> If you search for "animal", AI might find "dog", "cat", "pet" - all the related ideas!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- RAG Pipeline Section -->
+    <section id="pipeline" class="content-section">
+        <div class="card">
+            <div class="mascot">🔧</div>
+            <h2>Build-a-RAG Pipeline! 🔧</h2>
+            <p>Help build the AI learning pipeline! Drag the steps into the correct order to see how AI learns and answers questions.</p>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <p>Steps to build:</p>
+                <div class="pipeline-container" id="pipelineSteps">
+                    <div class="pipeline-step" draggable="true" id="step1">📄 Documents</div>
+                    <div class="pipeline-step" draggable="true" id="step2">✂️ Chunks</div>
+                    <div class="pipeline-step" draggable="true" id="step3">🔢 Vectors</div>
+                    <div class="pipeline-step" draggable="true" id="step4">💾 Database</div>
+                    <div class="pipeline-step" draggable="true" id="step5">❓ Query</div>
+                    <div class="pipeline-step" draggable="true" id="step6">💡 Answer</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <p>Place them in order:</p>
+                <div id="pipelineSlots">
+                    <div class="pipeline-slot" data-step="1"></div>
+                    <div class="pipeline-slot" data-step="2"></div>
+                    <div class="pipeline-slot" data-step="3"></div>
+                    <div class="pipeline-slot" data-step="4"></div>
+                    <div class="pipeline-slot" data-step="5"></div>
+                    <div class="pipeline-slot" data-step="6"></div>
+                </div>
+            </div>
+
+            <div id="pipelineFeedback" style="text-align: center; font-size: 1.2em; font-weight: bold; margin: 20px 0;"></div>
+        </div>
+
+        <div class="card">
+            <h3>⚙️ How the RAG Pipeline Works:</h3>
+            <p style="margin: 10px 0;">
+                <strong>1. Documents</strong> - AI starts by reading information<br>
+                <strong>2. Chunks</strong> - Breaks big documents into smaller pieces<br>
+                <strong>3. Vectors</strong> - Creates magic number codes for each piece<br>
+                <strong>4. Database</strong> - Stores all the magic codes<br>
+                <strong>5. Query</strong> - AI receives a question to answer<br>
+                <strong>6. Answer</strong> - AI uses the stored information to give the best answer!
+            </p>
+        </div>
+    </section>
+
+    <!-- Memory Match Section -->
+    <section id="memory" class="content-section">
+        <div class="card">
+            <div class="mascot">🃏</div>
+            <h2>Memory Match Game! 🎯</h2>
+            <p>Match the concepts with their definitions! Flip cards to find matching pairs.</p>
+            
+            <div class="memory-grid" id="memoryGrid">
+                <!-- Cards will be added by JavaScript -->
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <p id="memoryFeedback" style="font-size: 1.2em; font-weight: bold;">Find all matching pairs!</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🧠 Memory Challenge:</h3>
+            <p>Match these RAG concepts with their definitions. Each match helps you understand how AI learning works!</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin: 20px 0;">
+                <div style="padding: 16px; background: #E8F4FD; border-radius: 12px;">
+                    <strong>📚 Documents:</strong><br>Large pieces of information AI reads
+                </div>
+                <div style="padding: 16px; background: #E8F4FD; border-radius: 12px;">
+                    <strong>✂️ Chunks:</strong><br>Smaller pieces created from documents
+                </div>
+                <div style="padding: 16px; background: #E8F4FD; border-radius: 12px;">
+                    <strong>🔢 Vectors:</strong><br>Special number codes for words
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quiz Section -->
+    <section id="quiz" class="content-section">
+        <div class="card">
+            <div class="mascot">🎯</div>
+            <h2>RAG Adventure Quiz! 🧠</h2>
+            <p>Test your RAG knowledge and earn points!</p>
+            
+            <div id="quiz-container">
+                <div class="quiz-card">
+                    <h3 id="questionText" style="margin: 20px 0; font-size: 1.3em;">Question loading...</h3>
+                    <div id="optionsContainer"></div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <p id="scoreDisplay" style="font-size: 1.2em; font-weight: bold;">Score: 0</p>
+                <button class="action-btn" onclick="nextQuestion()">Next Question ➡️</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🏆 Quiz Tips:</h3>
+            <p>Each correct answer gives you points and helps you understand RAG better. Don't worry about wrong answers - they're just learning steps!</p>
+        </div>
+    </section>
+
+    <!-- Badges Section -->
+    <section id="badges" class="content-section">
+        <div class="card">
+            <div class="mascot">🏆</div>
+            <h2>Achievement Badges! 🎖️</h2>
+            <p>Congratulations on your progress! Unlock new badges as you learn and play.</p>
+            
+            <div class="badge-container">
+                <div class="badge" id="badge1">
+                    <div class="badge-icon">📚</div>
+                    <div class="badge-name">Document Explorer</div>
+                    <div style="font-size: 0.8em; color: var(--primary);">Start Learning</div>
+                </div>
+                <div class="badge" id="badge2">
+                    <div class="badge-icon">✂️</div>
+                    <div class="badge-name">Chunk Master</div>
+                    <div style="font-size: 0.8em; color: #E5E5EA;">Slice Documents</div>
+                </div>
+                <div class="badge" id="badge3">
+                    <div class="badge-icon">🔢</div>
+                    <div class="badge-name">Vector Wizard</div>
+                    <div style="font-size: 0.8em; color: #E5E5EA;">Create Magic Codes</div>
+                </div>
+                <div class="badge" id="badge4">
+                    <div class="badge-icon">🔍</div>
+                    <div class="badge-name">Detective Expert</div>
+                    <div style="font-size: 0.8em; color: #E5E5EA;">Find Similar Ideas</div>
+                </div>
+                <div class="badge" id="badge5">
+                    <div class="badge-icon">🔧</div>
+                    <div class="badge-name">Pipeline Builder</div>
+                    <div style="font-size: 0.8em; color: #E5E5EA;">Build AI Systems</div>
+                </div>
+                <div class="badge" id="badge6">
+                    <div class="badge-icon">🎓</div>
+                    <div class="badge-name">RAG Master</div>
+                    <div style="font-size: 0.8em; color: #E5E5EA;">Complete All Games</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>✨ Your Progress:</h3>
+            <div style="text-align: center; margin: 20px 0;">
+                <p id="totalScore">Total Score: 0</p>
+                <p id="badgesCount">Badges Earned: 0/6</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Confetti Canvas -->
+    <canvas id="confettiCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999;"></canvas>
+
+    <script>
+        // Game State
+        let gameState = {
+            score: 0,
+            badges: [],
+            chunkingSlices: 0,
+            pipelineSteps: [],
+            quizCorrect: 0,
+            totalQuestions: 0
+        };
+
+        // Progress tracking
+        function updateProgress(step) {
+            const totalSteps = 7; // Home, Chunking, Embeddings, Detective, Pipeline, Memory, Quiz, Badges
+            const progress = (step / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
         }
-        
-        // Model architecture
-        function showModel(model) {
-            const models = {
-                'bert': `
-BERT-base Architecture:
-├── Embedding: vocab → 768
-├── 12 Transformer Layers
-│   ├── Multi-Head Attention (12 heads, 64 dim each)
-│   ├── Layer Norm + Residual
-│   ├── Feed-Forward Network
-│   │   ├── Linear: 768 → 3072
-│   │   ├── GELU activation
-│   │   └── Linear: 3072 → 768
-│   └── Layer Norm + Residual
-└── Output: 768-dim vectors
 
-Total Parameters: ~110M
-Context Window: 512 tokens`,
-                'gpt2': `
-GPT-2 Architecture:
-├── Token Embedding: vocab → 768
-├── Position Embedding: 1024 → 768
-├── 12 Transformer Layers
-│   ├── Masked Self-Attention (12 heads)
-│   ├── Layer Norm + Residual
-│   ├── Feed-Forward Network
-│   │   ├── Linear: 768 → 3072
-│   │   ├── GELU activation
-│   │   └── Linear: 3072 → 768
-│   └── Layer Norm + Residual
-└── Output: vocab probabilities
+        // Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update active tab
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent.toLowerCase().includes(getSectionName(sectionId))) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            updateProgress(getSectionIndex(sectionId));
+        }
 
-Total Parameters: ~124M
-Context Window: 1024 tokens`,
-                'llama': `
-LLaMA-7B Architecture:
-├── Token Embedding: vocab → 4096
-├── RMS Norm (pre-norm)
-├── 32 Transformer Layers
-│   ├── RMS Norm
-│   ├── Rotary Position Embedding (RoPE)
-│   ├── Grouped Query Attention (32 heads)
-│   │   └── Key-Value Cache for inference
-│   ├── SwiGLU Feed-Forward
-│   │   ├── Gate projection: 4096 → 11008
-│   │   ├── Up projection: 4096 → 11008
-│   │   ├── SiLU activation
-│   │   └── Down projection: 11008 → 4096
-│   └── Residual connection
-└── Output: 4096-dim vectors
+        function getSectionName(sectionId) {
+            const names = {
+                'home': 'home',
+                'chunking': 'chunking',
+                'embeddings': 'embeddings',
+                'detective': 'detective',
+                'pipeline': 'pipeline',
+                'memory': 'memory',
+                'quiz': 'quiz',
+                'badges': 'badges'
+            };
+            return names[sectionId] || '';
+        }
 
-Total Parameters: ~7B
-Context Window: 2048+ tokens`
+        function getSectionIndex(sectionId) {
+            const sections = ['home', 'chunking', 'embeddings', 'detective', 'pipeline', 'memory', 'quiz', 'badges'];
+            return sections.indexOf(sectionId) + 1;
+        }
+
+        // Pizza Slicing Game
+        function slicePizza() {
+            gameState.chunkingSlices++;
+            const pizza = document.getElementById('pizza');
+            const message = document.getElementById('pizza-message');
+            
+            // Add toppings
+            const toppings = ['🍅', '🧀', '🌿', '🍄', '🥓'];
+            const pizzaElement = document.getElementById('pizza');
+            
+            // Add a random topping
+            const topping = document.createElement('div');
+            topping.className = 'topping';
+            topping.textContent = toppings[Math.floor(Math.random() * toppings.length)];
+            topping.style.top = (20 + Math.random() * 60) + '%';
+            topping.style.left = (20 + Math.random() * 60) + '%';
+            topping.style.transform = `translate(-50%, -50%) rotate(${Math.random() * 360}deg)`;
+            pizza.appendChild(topping);
+            
+            message.textContent = `You sliced the document! 🍕 (${gameState.chunkingSlices} slices)`;
+            
+            // Add points
+            gameState.score += 10;
+            updateScore();
+            
+            if (gameState.chunkingSlices >= 3) {
+                unlockBadge('badge2', 'Chunk Master');
+            }
+        }
+
+        // Embedding Space Explorer
+        function initEmbeddingSpace() {
+            const space = document.getElementById('embeddingSpace');
+            const words = [
+                { text: '🐶 Cat', x: 150, y: 150 },
+                { text: '🐱 Dog', x: 180, y: 150 },
+                { text: '🐶 Puppy', x: 160, y: 180 },
+                { text: '🚗 Car', x: 400, y: 100 },
+                { text: '🚙 Truck', x: 420, y: 130 },
+                { text: '✈️ Airplane', x: 350, y: 80 },
+                { text: '🍎 Apple', x: 150, y: 300 },
+                { text: '🍌 Banana', x: 180, y: 280 },
+                { text: '🍇 Grapes', x: 200, y: 310 }
+            ];
+            
+            words.forEach(word => {
+                const node = document.createElement('div');
+                node.className = 'word-node';
+                node.textContent = word.text;
+                node.style.left = word.x + 'px';
+                node.style.top = word.y + 'px';
+                space.appendChild(node);
+                
+                // Make draggable
+                makeDraggable(node);
+            });
+        }
+
+        function makeDraggable(element) {
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+            
+            element.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                initialLeft = element.offsetLeft;
+                initialTop = element.offsetTop;
+                element.style.cursor = 'grabbing';
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    element.style.left = (initialLeft + dx) + 'px';
+                    element.style.top = (initialTop + dy) + 'px';
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    element.style.cursor = 'grab';
+                }
+            });
+        }
+
+        // Vector Detective
+        function findSimilar() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const resultsDiv = document.getElementById('searchResults');
+            
+            const results = {
+                'animal': ['🐶 Cat', '🐱 Dog', '🐰 Rabbit', '🐹 Hamster', '🦊 Fox'],
+                'fruit': ['🍎 Apple', '🍌 Banana', '🍇 Grapes', '🍊 Orange', '🍓 Strawberry'],
+                'vehicle': ['🚗 Car', '🚙 Truck', '✈️ Airplane', '🚀 Rocket', '🚢 Ship'],
+                'food': ['🍕 Pizza', '🍔 Burger', '🍟 Fries', '🌭 Hot Dog', '🌮 Taco'],
+                'color': ['🎨 Red', '🔵 Blue', '🟢 Green', '🟡 Yellow', '🟣 Purple']
             };
             
-            document.getElementById('modelInfo').innerHTML = `<pre>${models[model]}</pre>`;
-            
-            // Update active button
-            document.querySelectorAll('.input-group .btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-        }
-        
-        // Compare words
-        function compareWords() {
-            const w1 = document.getElementById('word1').value.toLowerCase();
-            const w2 = document.getElementById('word2').value.toLowerCase();
-            
-            // Check if we have embeddings for these words
-            if (!wordEmbeddings[w1] || !wordEmbeddings[w2]) {
-                // Generate pseudo-embeddings for unknown words
-                if (!wordEmbeddings[w1]) {
-                    wordEmbeddings[w1] = Array(5).fill(0).map(() => Math.random());
-                }
-                if (!wordEmbeddings[w2]) {
-                    wordEmbeddings[w2] = Array(5).fill(0).map(() => Math.random());
+            let matched = false;
+            for (const [keyword, items] of Object.entries(results)) {
+                if (searchInput.includes(keyword)) {
+                    resultsDiv.innerHTML = `<h3>🔍 Similar to "${keyword}":</h3>` + 
+                        items.map(item => `<div style="padding: 8px; margin: 4px 0; background: #E8F4FD; border-radius: 8px;">${item}</div>`).join('');
+                    matched = true;
+                    break;
                 }
             }
             
-            const sim = cosineSimilarity(wordEmbeddings[w1], wordEmbeddings[w2]);
+            if (!matched) {
+                resultsDiv.innerHTML = `<p>Try searching for: "animal", "fruit", "vehicle", "food", or "color"!</p>`;
+            }
             
-            document.getElementById('customComparison').innerHTML = `
-                <p><strong>${w1}</strong> vs <strong>${w2}</strong></p>
-                <p style="font-size: 2em; color: ${sim > 0.7 ? '#00ff88' : sim > 0.4 ? '#ffc800' : '#ff4444'}">
-                    Similarity: ${(sim * 100).toFixed(1)}%
-                </p>
-                <p>${sim > 0.7 ? 'These concepts are closely related!' : 
-                    sim > 0.4 ? 'Some semantic overlap exists.' : 
-                    'These are different concepts.'}</p>
-            `;
+            gameState.score += 15;
+            updateScore();
+            
+            if (gameState.score > 100) {
+                unlockBadge('badge3', 'Vector Wizard');
+            }
         }
+
+        // Pipeline Game
+        let pipelineItems = [];
         
-        // Quiz
+        function initPipelineGame() {
+            const steps = document.querySelectorAll('.pipeline-step');
+            const slots = document.querySelectorAll('.pipeline-slot');
+            
+            steps.forEach(step => {
+                step.addEventListener('dragstart', (e) => {
+                    pipelineItems.push(step.id);
+                    e.dataTransfer.setData('text/plain', step.id);
+                    setTimeout(() => step.style.display = 'none', 0);
+                });
+                
+                step.addEventListener('dragend', () => {
+                    setTimeout(() => step.style.display = 'block', 0);
+                });
+            });
+            
+            slots.forEach(slot => {
+                slot.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    slot.style.backgroundColor = '#E8F4FD';
+                });
+                
+                slot.addEventListener('dragleave', () => {
+                    slot.style.backgroundColor = '#FAFAFA';
+                });
+                
+                slot.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    slot.style.backgroundColor = '#FAFAFA';
+                    
+                    const stepId = e.dataTransfer.getData('text/plain');
+                    if (stepId) {
+                        const stepNumber = stepId.replace('step', '');
+                        if (slot.dataset.step === stepNumber) {
+                            slot.innerHTML = document.getElementById(stepId).textContent;
+                            slot.style.background = '#34C759';
+                            slot.style.color = 'white';
+                            slot.style.border = 'none';
+                            
+                            gameState.score += 20;
+                            updateScore();
+                            
+                            if (slots.every(s => s.innerHTML !== '')) {
+                                document.getElementById('pipelineFeedback').textContent = '🎉 Amazing! You built the perfect pipeline!';
+                                unlockBadge('badge5', 'Pipeline Builder');
+                            }
+                        } else {
+                            slot.style.border = '2px solid #FF3B30';
+                            setTimeout(() => slot.style.border = '2px dashed #E5E5EA', 1000);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Memory Match Game
+        const memoryCards = [
+            { id: 'doc', icon: '📚', text: 'Documents' },
+            { id: 'doc', icon: '📄', text: 'Large Information' },
+            { id: 'chunk', icon: '✂️', text: 'Chunks' },
+            { id: 'chunk', icon: '🔪', text: 'Sliced Pieces' },
+            { id: 'vector', icon: '🔢', text: 'Vectors' },
+            { id: 'vector', icon: 'htag', text: 'Number Codes' },
+            { id: 'search', icon: '🔍', text: 'Search' },
+            { id: 'search', icon: '❓', text: 'Find Similar' }
+        ];
+
+        function initMemoryGame() {
+            const grid = document.getElementById('memoryGrid');
+            const cards = [...memoryCards];
+            
+            // Shuffle cards
+            for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+            
+            let flippedCards = [];
+            let matchedPairs = 0;
+            
+            cards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'memory-card';
+                cardElement.dataset.id = card.id;
+                
+                cardElement.innerHTML = `
+                    <div class="memory-card-content">${card.icon}</div>
+                `;
+                
+                cardElement.addEventListener('click', () => {
+                    if (flippedCards.length < 2 && !cardElement.classList.contains('flipped') && !cardElement.classList.contains('matched')) {
+                        cardElement.classList.add('flipped');
+                        flippedCards.push(cardElement);
+                        
+                        if (flippedCards.length === 2) {
+                            checkMatch();
+                        }
+                    }
+                });
+                
+                grid.appendChild(cardElement);
+            });
+            
+            function checkMatch() {
+                const [card1, card2] = flippedCards;
+                
+                if (card1.dataset.id === card2.dataset.id) {
+                    setTimeout(() => {
+                        card1.classList.add('matched');
+                        card2.classList.add('matched');
+                        card1.style.backgroundColor = 'var(--success)';
+                        card2.style.backgroundColor = 'var(--success)';
+                        matchedPairs++;
+                        
+                        if (matchedPairs === memoryCards.length / 2) {
+                            document.getElementById('memoryFeedback').textContent = '🎉 Perfect Memory! All pairs found!';
+                            gameState.score += 50;
+                            updateScore();
+                            unlockBadge('badge6', 'RAG Master');
+                        }
+                    }, 500);
+                } else {
+                    setTimeout(() => {
+                        card1.classList.remove('flipped');
+                        card2.classList.remove('flipped');
+                    }, 1000);
+                }
+                
+                flippedCards = [];
+            }
+        }
+
+        // Quiz Game
         const quizQuestions = [
             {
-                q: "What do embeddings represent?",
+                question: "What do we call the large pieces of information that AI reads?",
                 options: [
-                    "Random numbers assigned to words",
-                    "Numerical vectors capturing semantic meaning",
-                    "The alphabetical position of letters",
-                    "The length of words in characters"
-                ],
-                correct: 1
+                    { text: "Chunks", correct: false },
+                    { text: "Documents", correct: true },
+                    { text: "Vectors", correct: false },
+                    { text: "Memory", correct: false }
+                ]
             },
             {
-                q: "In attention, what does the 'Query' represent?",
+                question: "Why do we need to slice documents into chunks?",
                 options: [
-                    "The answer we're looking for",
-                    "What the current token is looking for",
-                    "The database to search in",
-                    "The position of the token"
-                ],
-                correct: 1
+                    { text: "To make them smaller and easier to read", correct: true },
+                    { text: "To throw them away", correct: false },
+                    { text: "To hide them from AI", correct: false },
+                    { text: "To make them look prettier", correct: false }
+                ]
             },
             {
-                q: "Why does the feed-forward network expand then contract?",
+                question: "What are Vectors in RAG?",
                 options: [
-                    "To save memory",
-                    "To learn more complex representations",
-                    "To speed up computation",
-                    "To reduce overfitting"
-                ],
-                correct: 1
+                    { text: "Special number codes that help AI understand words", correct: true },
+                    { text: "Super fast computers", correct: false },
+                    { text: "AI robots", correct: false },
+                    { text: "Magic spells", correct: false }
+                ]
             },
             {
-                q: "In 'The cat sat on the mat', what does 'it' most likely refer to?",
+                question: "In the RAG pipeline, what comes after 'Chunks'?",
                 options: [
-                    "The mat",
-                    "The cat",
-                    "The sitting action",
-                    "The word 'sat'"
-                ],
-                correct: 1
+                    { text: "Vectors (magic number codes)", correct: true },
+                    { text: "Documents", correct: false },
+                    { text: "Query", correct: false },
+                    { text: "Answer", correct: false }
+                ]
             },
             {
-                q: "What similarity would 'king' and 'queen' have?",
+                question: "What does the 'Vector Detective' help AI do?",
                 options: [
-                    "Low (~20%) - different meanings",
-                    "Medium (~50%) - same language",
-                    "High (~85%+) - related concepts",
-                    "Zero - completely different"
-                ],
-                correct: 2
+                    { text: "Find similar ideas and concepts", correct: true },
+                    { text: "Cook delicious pizza", correct: false },
+                    { text: "Drive fast cars", correct: false },
+                    { text: "Play video games", correct: false }
+                ]
             }
         ];
-        
-        let currentQuiz = 0;
-        
-        function loadQuiz() {
-            const q = quizQuestions[Math.floor(Math.random() * quizQuestions.length)];
-            const container = document.getElementById('quizContainer');
-            
-            container.innerHTML = `
-                <div class="quiz-question">
-                    <h4>${q.q}</h4>
-                    <div class="quiz-options">
-                        ${q.options.map((opt, i) => 
-                            `<div class="quiz-option" onclick="checkAnswer(this, ${i}, ${q.correct})">${opt}</div>`
-                        ).join('')}
-                    </div>
-                </div>
-            `;
+
+        let currentQuestionIndex = 0;
+
+        function initQuiz() {
+            renderQuestion();
         }
-        
-        function checkAnswer(element, selected, correct) {
-            const options = document.querySelectorAll('.quiz-option');
-            options.forEach((opt, i) => {
-                if (i === correct) {
-                    opt.classList.add('correct');
-                } else if (i === selected) {
-                    opt.classList.add('incorrect');
-                }
+
+        function renderQuestion() {
+            const questionData = quizQuestions[currentQuestionIndex];
+            document.getElementById('questionText').textContent = `${currentQuestionIndex + 1}. ${questionData.question}`;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            questionData.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'quiz-option';
+                optionDiv.textContent = option.text;
+                optionDiv.onclick = () => checkAnswer(optionDiv, option.correct);
+                optionsContainer.appendChild(optionDiv);
             });
-        }
-        
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            initEmbeddingDemo();
-            drawVectorSpace();
-            setSentence('The cat sat on the mat');
-            loadQuiz();
             
-            // Initial comparison
-            const sim = cosineSimilarity(wordEmbeddings['computer'], wordEmbeddings['car']);
-            document.getElementById('comparisonResult').innerHTML = `
-                <p><strong>Semantic Distance:</strong> Computer and Car share ${(sim * 100).toFixed(1)}% similarity</p>
-                <p style="color: #888; font-size: 0.9em;">Both are: manufactured products, require maintenance, have models/brands, evolved over time</p>
-                <p style="color: #888; font-size: 0.9em;">Differences: Computers process information; Cars transport physically</p>
-            `;
-        });
-        
-        function addCustomWord() {
-            const word = document.getElementById('customWord').value.trim().toLowerCase();
-            if (word && !wordPositions2D[word]) {
-                wordPositions2D[word] = {
-                    x: Math.random() * 600 + 100,
-                    y: Math.random() * 300 + 50,
-                    color: `hsl(${Math.random() * 360}, 70%, 60%)`
-                };
-                wordEmbeddings[word] = Array(5).fill(0).map(() => Math.random());
-                drawVectorSpace();
-            }
-            document.getElementById('customWord').value = '';
+            gameState.totalQuestions++;
         }
+
+        function checkAnswer(optionDiv, isCorrect) {
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach(opt => opt.style.pointerEvents = 'none'); // Prevent multiple clicks
+            
+            if (isCorrect) {
+                optionDiv.classList.add('correct');
+                gameState.score += 25;
+                createConfetti();
+                document.getElementById('quizFeedback').textContent = '✅ Correct! Great job!';
+            } else {
+                optionDiv.classList.add('wrong');
+                document.getElementById('quizFeedback').textContent = '❌ Try again! You can do it!';
+            }
+            
+            updateScore();
+            
+            // Show correct answer if wrong
+            if (!isCorrect) {
+                quizQuestions[currentQuestionIndex].options.forEach((opt, idx) => {
+                    if (opt.correct) {
+                        options[idx].classList.add('correct');
+                    }
+                });
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizQuestions.length) {
+                renderQuestion();
+                document.getElementById('quizFeedback').textContent = '';
+            } else {
+                document.getElementById('questionText').textContent = '🎉 Quiz Complete! You are a RAG expert!';
+                document.getElementById('optionsContainer').innerHTML = '<p style="text-align: center; padding: 20px;">Final Score: ' + gameState.score + '</p>';
+                gameState.score += 100; // Bonus for completing quiz
+                updateScore();
+                unlockBadge('badge6', 'RAG Master');
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('scoreDisplay').textContent = 'Score: ' + gameState.score;
+            document.getElementById('totalScore').textContent = 'Total Score: ' + gameState.score;
+            
+            const badgesEarned = document.querySelectorAll('.badge-unlocked').length;
+            document.getElementById('badgesCount').textContent = 'Badges Earned: ' + badgesEarned + '/6';
+        }
+
+        // Badge System
+        function unlockBadge(badgeId, badgeName) {
+            if (!gameState.badges.includes(badgeId)) {
+                gameState.badges.push(badgeId);
+                const badge = document.getElementById(badgeId);
+                if (badge) {
+                    badge.classList.add('badge-unlocked');
+                    createConfetti();
+                }
+            }
+        }
+
+        // Confetti Animation
+        function createConfetti() {
+            const canvas = document.getElementById('confettiCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const colors = ['#007AFF', '#AF52DE', '#FF9500', '#34C759', '#FF3B30'];
+            const particles = [];
+            
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: -10,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: Math.random() * 5 + 2,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: Math.random() * 8 + 2,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: (Math.random() - 0.5) * 10
+                });
+            }
+            
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                let activeParticles = 0;
+                
+                particles.forEach(particle => {
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.rotation += particle.rotationSpeed;
+                    
+                    if (particle.y < canvas.height) {
+                        activeParticles++;
+                        ctx.save();
+                        ctx.translate(particle.x, particle.y);
+                        ctx.rotate(particle.rotation * Math.PI / 180);
+                        ctx.fillStyle = particle.color;
+                        ctx.fillRect(-particle.size / 2, -particle.size / 2, particle.size, particle.size);
+                        ctx.restore();
+                    }
+                });
+                
+                if (activeParticles > 0) {
+                    requestAnimationFrame(animate);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+            
+            animate();
+        }
+
+        // Initialize Games on page load
+        window.onload = function() {
+            initEmbeddingSpace();
+            initPipelineGame();
+            initMemoryGame();
+            initQuiz();
+            
+            // Add some initial toppings to pizza
+            setTimeout(() => {
+                for (let i = 0; i < 3; i++) {
+                    slicePizza();
+                }
+            }, 500);
+            
+            // Add click effect to buttons
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.style.transform = 'translateY(-2px)';
+                    setTimeout(() => {
+                        this.style.transform = 'translateY(0)';
+                    }, 200);
+                });
+            });
+        };
+
+        // Add some fun interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to cards
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.boxShadow = '0 8px 24px rgba(0, 122, 255, 0.15)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
+                });
+            });
+        });
     </script>
 </body>
 </html>
